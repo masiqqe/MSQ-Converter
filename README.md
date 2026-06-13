@@ -14,7 +14,7 @@
 
 ---
 
-![MSQ Converter](docs/preview.png)
+![Demo](docs/demo.gif)
 
 </div>
 
@@ -72,11 +72,13 @@ No dependencies required — FFmpeg and Sharp are bundled inside.
 
 <div align="center">
 
-![App window](docs/preview.png)
-*Main window*
+<img src="docs/preview.png" alt="Main window"><br>
+<sub>Main window</sub>
 
-![Settings](docs/settings.png)
-*Settings — language, auto-close, auto-update*
+<br><br>
+
+<img src="docs/settings.png" alt="Settings"><br>
+<sub>Settings — language, auto-close, auto-update</sub>
 
 </div>
 
@@ -118,7 +120,7 @@ Or drag files directly into the app window.
 
 ---
 
-![MSQ Converter](docs/preview.png)
+![Demo](docs/demo.gif)
 
 </div>
 
@@ -176,11 +178,13 @@ Or drag files directly into the app window.
 
 <div align="center">
 
-![Окно приложения](docs/preview.png)
-*Главное окно*
+<img src="docs/preview.png" alt="Главное окно"><br>
+<sub>Главное окно</sub>
 
-![Настройки](docs/settings.png)
-*Настройки — язык, автозакрытие, автообновление*
+<br><br>
+
+<img src="docs/settings.png" alt="Настройки"><br>
+<sub>Настройки — язык, автозакрытие, автообновление</sub>
 
 </div>
 
