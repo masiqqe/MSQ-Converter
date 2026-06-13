@@ -9,6 +9,7 @@
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 [![Platform](https://img.shields.io/badge/Platform-Windows-lightgrey.svg)](https://github.com/masiqqe/MSQ-Converter/releases)
 [![Release](https://img.shields.io/github/v/release/masiqqe/MSQ-Converter)](https://github.com/masiqqe/MSQ-Converter/releases/latest)
+[![Donate](https://img.shields.io/badge/Donate-DonationAlerts-orange.svg)](https://www.donationalerts.com/r/masiqqe)
 
 [Download](#download) · [Features](#features) · [Supported Formats](#supported-formats) · [Русский](#русский)
 
