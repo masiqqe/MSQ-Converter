@@ -104,6 +104,10 @@ Or drag files directly into the app window.
 
 ---
 
+## Support the author
+
+[![Donate](https://img.shields.io/badge/Donate-DonationAlerts-orange.svg)](https://www.donationalerts.com/r/masiqqe)
+
 ## License
 
 [GNU General Public License v3.0](LICENSE)
@@ -200,6 +204,10 @@ Or drag files directly into the app window.
 Или перетащи файлы прямо в окно приложения.
 
 ---
+
+## Поддержать автора
+
+[![Donate](https://img.shields.io/badge/Donate-DonationAlerts-orange.svg)](https://www.donationalerts.com/r/masiqqe)
 
 ## Лицензия
 
