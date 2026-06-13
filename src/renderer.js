@@ -383,3 +383,14 @@ document.getElementById('linkTelegram').addEventListener('click', () => {
   shell.openExternal('https://t.me/masiqqee')
 })
 applyLang()
+
+// Автообновление
+ipcRenderer.on('trigger-update-check', () => {
+  if (settings.autoUpdate) {
+    ipcRenderer.send('check-update')
+  }
+})
+
+ipcRenderer.on('update-available', (event, { latest, downloadUrl }) => {
+  ipcRenderer.send('show-update-dialog', { latest, downloadUrl })
+})

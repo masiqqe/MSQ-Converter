@@ -82,6 +82,7 @@ function createWindow(files, format, scale, resolution) {
 
   mainWindow.webContents.on('did-finish-load', () => {
     mainWindow.webContents.send('is-win11', isWin11)
+    mainWindow.webContents.send('trigger-update-check')
     if (files && files.length > 0) {
       if (resolution) {
         mainWindow.webContents.send('resolution-files', { files, resolution, format })
@@ -223,3 +224,77 @@ ipcMain.on('window-maximize', () => {
   else mainWindow.maximize()
 })
 ipcMain.on('window-close', () => mainWindow.close())
+
+const https = require('https')
+
+function checkForUpdates() {
+  const options = {
+    hostname: 'api.github.com',
+    path: '/repos/masiqqe/MSQ-Converter/releases/latest',
+    headers: { 'User-Agent': 'MSQ-Converter' }
+  }
+
+  https.get(options, (res) => {
+    let data = ''
+    res.on('data', chunk => data += chunk)
+    res.on('end', () => {
+      try {
+        const release = JSON.parse(data)
+        const latest = release.tag_name.replace('v', '')
+        const current = app.getVersion()
+        if (latest !== current) {
+          const asset = release.assets.find(a => a.name.endsWith('.exe'))
+          const downloadUrl = asset ? asset.browser_download_url : release.html_url
+          if (mainWindow) {
+            mainWindow.webContents.send('update-available', { latest, downloadUrl })
+          }
+        }
+      } catch (e) {}
+    })
+  }).on('error', () => {})
+}
+
+ipcMain.on('check-update', () => {
+  checkForUpdates()
+})
+
+ipcMain.on('show-update-dialog', (event, { latest, downloadUrl }) => {
+  const { dialog, shell } = require('electron')
+  const result = dialog.showMessageBoxSync(mainWindow, {
+    type: 'info',
+    title: 'Update available',
+    message: `MSQ Converter v${latest} is available`,
+    detail: 'Do you want to download and install the update?',
+    buttons: ['Install', 'Later'],
+    defaultId: 0
+  })
+
+  if (result === 0) {
+    const fs = require('fs')
+    const os = require('os')
+    const tmpPath = path.join(os.tmpdir(), 'MSQ-Converter-Setup.exe')
+    const file = fs.createWriteStream(tmpPath)
+
+    const download = (url) => {
+      require('https').get(url, (res) => {
+        if (res.statusCode === 302 || res.statusCode === 301) {
+          download(res.headers.location)
+          return
+        }
+        res.pipe(file)
+        file.on('finish', () => {
+          file.close(() => {
+            const { execFile } = require('child_process')
+            execFile(tmpPath, ['/SILENT'], (err) => {})
+            setTimeout(() => app.quit(), 2000)
+          })
+        })
+      }).on('error', () => {
+        fs.unlink(tmpPath, () => {})
+        shell.openExternal(downloadUrl)
+      })
+    }
+
+    download(downloadUrl)
+  }
+})
