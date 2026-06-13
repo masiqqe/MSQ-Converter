@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MSQ Converter</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="icon" href="assets/icon.png">
+</head>
+<body>
+  <div class="titlebar">
+    <div class="titlebar-drag">
+      <img src="assets/icon.png" class="titlebar-icon">
+      <span class="titlebar-title">MSQ Converter</span>
+    </div>
+    <div class="titlebar-controls">
+      <div class="win-controls-row">
+        <button class="win-btn" id="minBtn"><span class="win-btn-icon">─</span></button>
+        <button class="win-btn" id="maxBtn"><span class="win-btn-icon">□</span></button>
+        <button class="win-btn close" id="closeBtn"><span class="win-btn-icon">✕</span></button>
+      </div>
+      <div class="action-controls">
+        <button class="icon-btn" id="historyBtn" title="Logs">☰</button>
+        <button class="icon-btn" id="settingsBtn" title="Settings">⚙</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="file-list" id="fileList" droppable="true">
+    <div class="empty-state" id="emptyState">
+      <p>Drag files here or open via context menu</p>
+    </div>
+  </div>
+
+  <div class="log-panel" id="logPanel">
+    <div class="log-header">
+      <span>Logs</span>
+      <button class="log-close" id="logClose">✕</button>
+    </div>
+    <div class="log-body" id="logBody"></div>
+  </div>
+
+  <div class="settings-overlay" id="settingsOverlay">
+    <div class="settings-modal">
+      <div class="settings-header">
+        <span>Settings</span>
+        <button class="settings-close" id="settingsClose">✕</button>
+      </div>
+      <div class="settings-tabs">
+        <button class="settings-tab active" data-tab="general">Settings</button>
+        <button class="settings-tab" data-tab="about">About</button>
+      </div>
+      <div class="settings-body">
+        <div class="tab-content active" id="tab-general">
+          <div class="setting-row">
+            <span class="setting-label">Language</span>
+            <select class="setting-select" id="settingLang">
+              <option value="en">English</option>
+              <option value="ru">Русский</option>
+            </select>
+          </div>
+          <div class="setting-row">
+            <span class="setting-label">Auto-close after all conversions done</span>
+            <button class="toggle-btn" id="toggleAutoClose">Yes</button>
+          </div>
+          <div class="setting-row">
+            <span class="setting-label">Check for updates on startup</span>
+            <button class="toggle-btn" id="toggleAutoUpdate">Yes</button>
+          </div>
+        </div>
+        <div class="tab-content" id="tab-about">
+          <div class="about-top">
+            <div class="about-text">
+              <div class="about-title">MSQ Converter</div>
+              <div class="about-version" id="aboutVersion">v1.0.0</div>
+              <div class="about-author">by masiqqe</div>
+              <div class="about-license">This program is free software. You may redistribute it and/or modify it under the terms of the GNU General Public License.</div>
+            </div>
+            <div class="about-icon" id="aboutIcon"></div>
+          </div>
+          <div class="about-links">
+            <button class="about-link-btn" id="linkSite" title="Website">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+            </button>
+            <button class="about-link-btn" id="linkGithub" title="GitHub">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.477 2 2 6.477 2 12c0 4.418 2.865 8.166 6.839 9.489.5.092.682-.217.682-.482 0-.237-.009-.868-.013-1.703-2.782.604-3.369-1.34-3.369-1.34-.454-1.156-1.11-1.463-1.11-1.463-.908-.62.069-.608.069-.608 1.003.07 1.531 1.03 1.531 1.03.892 1.529 2.341 1.087 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.11-4.555-4.943 0-1.091.39-1.984 1.029-2.683-.103-.253-.446-1.27.098-2.647 0 0 .84-.269 2.75 1.025A9.578 9.578 0 0 1 12 6.836a9.59 9.59 0 0 1 2.504.337c1.909-1.294 2.747-1.025 2.747-1.025.546 1.377.203 2.394.1 2.647.64.699 1.028 1.592 1.028 2.683 0 3.842-2.339 4.687-4.566 4.935.359.309.678.919.678 1.852 0 1.336-.012 2.415-.012 2.741 0 .267.18.578.688.48C19.138 20.163 22 16.418 22 12c0-5.523-4.477-10-10-10z"/></svg>
+            </button>
+            <button class="about-link-btn" id="linkTelegram" title="Telegram">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8-1.7 8.02c-.12.57-.46.71-.93.44l-2.58-1.9-1.24 1.19c-.14.14-.25.25-.51.25l.18-2.6 4.72-4.26c.2-.18-.05-.28-.32-.1L8.34 14.9l-2.54-.8c-.55-.17-.56-.55.12-.82l9.91-3.82c.46-.17.86.11.71.82z"/></svg>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="renderer.js"></script>
+</body>
+</html>

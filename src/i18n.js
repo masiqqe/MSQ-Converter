@@ -1,0 +1,40 @@
+const i18n = {
+  en: {
+    emptyState: 'Drag files here or open via context menu',
+    logs: 'Logs',
+    converting: 'Converting...',
+    done: 'Done',
+    error: 'Error',
+    cancelled: 'Cancelled',
+    processing: 'Processing...',
+    convertedFrom: 'Converted from',
+    from: 'From',
+    settingsTitle: 'Settings',
+    tabSettings: 'Settings',
+    tabAbout: 'About',
+    autoClose: 'Auto-close after all conversions done',
+    autoUpdate: 'Check for updates on startup',
+    language: 'Language',
+    license: 'This program is free software. You may redistribute it and/or modify it under the terms of the GNU General Public License.',
+  },
+  ru: {
+    emptyState: 'Перетащите файлы сюда или запустите через контекстное меню',
+    logs: 'Логи',
+    converting: 'Конвертация...',
+    done: 'Готово',
+    error: 'Ошибка',
+    cancelled: 'Отменено',
+    processing: 'Обработка...',
+    convertedFrom: 'Конвертировано из',
+    from: 'Из',
+    settingsTitle: 'Настройки',
+    tabSettings: 'Настройки',
+    tabAbout: 'О программе',
+    autoClose: 'Автозакрытие после завершения конвертаций',
+    autoUpdate: 'Проверять обновления при запуске',
+    language: 'Язык',
+    license: 'Эта программа является свободным программным обеспечением. Вы можете распространять её и/или модифицировать в соответствии с условиями GNU General Public License.',
+  }
+}
+
+module.exports = i18n
