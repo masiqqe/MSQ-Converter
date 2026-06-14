@@ -60,7 +60,7 @@ No dependencies required — FFmpeg and Sharp are bundled inside.
 ### Audio
 | Input | Output |
 |-------|--------|
-| MP3, WAV, FLAC, AAC, OGG, M4A, WMA, OPUS | OGG, FLAC, WAV, MP3, AAC |
+| MP3, WAV, FLAC, AAC, OGG, M4A, WMA, OPUS | OGG, FLAC, WAV, MP3, АAC |
 
 ### GIF
 | Input | Output |
