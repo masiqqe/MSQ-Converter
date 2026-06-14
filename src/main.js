@@ -60,6 +60,7 @@ function createWindow(files, format, scale, resolution) {
   const os = require('os')
   const release = os.release().split('.')[2]
   const isWin11 = parseInt(release) >= 22000
+  const launchedSilently = !files || files.length === 0
 
   mainWindow = new BrowserWindow({
     width: 700,
@@ -82,14 +83,19 @@ function createWindow(files, format, scale, resolution) {
 
   mainWindow.webContents.on('did-finish-load', () => {
     mainWindow.webContents.send('is-win11', isWin11)
-    mainWindow.webContents.send('trigger-update-check')
-    if (files && files.length > 0) {
-      if (resolution) {
-        mainWindow.webContents.send('resolution-files', { files, resolution, format })
-      } else if (scale) {
-        mainWindow.webContents.send('scale-files', { files, percent: scale, format })
-      } else {
-        mainWindow.webContents.send('convert-files', { files, targetFormat: format })
+    if (launchedSilently) {
+      mainWindow.hide()
+      mainWindow.webContents.send('trigger-update-check')
+    } else {
+      mainWindow.webContents.send('trigger-update-check')
+      if (files && files.length > 0) {
+        if (resolution) {
+          mainWindow.webContents.send('resolution-files', { files, resolution, format })
+        } else if (scale) {
+          mainWindow.webContents.send('scale-files', { files, percent: scale, format })
+        } else {
+          mainWindow.webContents.send('convert-files', { files, targetFormat: format })
+        }
       }
     }
   })
@@ -238,20 +244,26 @@ function checkForUpdates() {
     let data = ''
     res.on('data', chunk => data += chunk)
     res.on('end', () => {
-      try {
-        const release = JSON.parse(data)
-        const latest = release.tag_name.replace('v', '')
-        const current = app.getVersion()
-        if (latest !== current) {
-          const asset = release.assets.find(a => a.name.endsWith('.exe'))
-          const downloadUrl = asset ? asset.browser_download_url : release.html_url
-          if (mainWindow) {
-            mainWindow.webContents.send('update-available', { latest, downloadUrl })
-          }
-        }
-      } catch (e) {}
-    })
-  }).on('error', () => {})
+  try {
+    const release = JSON.parse(data)
+    const latest = release.tag_name.replace('v', '')
+    const current = app.getVersion()
+    if (latest !== current) {
+      const asset = release.assets.find(a => a.name.endsWith('.exe'))
+      const downloadUrl = asset ? asset.browser_download_url : release.html_url
+      if (mainWindow) {
+        mainWindow.webContents.send('update-available', { latest, downloadUrl })
+      }
+    } else {
+      if (mainWindow && !mainWindow.isVisible()) app.quit()
+    }
+  } catch (e) {
+    if (mainWindow && !mainWindow.isVisible()) app.quit()
+  }
+})
+    }).on('error', () => {
+      if (mainWindow && !mainWindow.isVisible()) app.quit()
+  })
 }
 
 ipcMain.on('check-update', () => {
@@ -260,6 +272,7 @@ ipcMain.on('check-update', () => {
 
 ipcMain.on('show-update-dialog', (event, { latest, downloadUrl }) => {
   const { dialog, shell } = require('electron')
+  mainWindow.show()
   const result = dialog.showMessageBoxSync(mainWindow, {
     type: 'info',
     title: 'Update available',
@@ -296,5 +309,7 @@ ipcMain.on('show-update-dialog', (event, { latest, downloadUrl }) => {
     }
 
     download(downloadUrl)
+  } else {
+    if (!mainWindow.isVisible()) app.quit()
   }
 })
