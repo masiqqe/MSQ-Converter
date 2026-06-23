@@ -559,3 +559,89 @@ button, input, select, .file-item, .file-list, .log-panel,
 .file-item * {
   -webkit-app-region: no-drag;
 }
+
+/* DROP FORMAT MENU */
+.drop-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.6);
+  z-index: 200;
+  align-items: center;
+  justify-content: center;
+}
+
+.drop-overlay.open {
+  display: flex;
+}
+
+.drop-modal {
+  background: rgba(30,30,30,0.97);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 12px;
+  padding: 20px;
+  width: 420px;
+  box-shadow: 0 16px 48px rgba(0,0,0,0.7);
+  -webkit-app-region: no-drag;
+}
+
+.drop-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: rgba(255,255,255,0.5);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 14px;
+}
+
+.drop-formats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+.drop-fmt-btn {
+  padding: 6px 14px;
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 6px;
+  background: rgba(255,255,255,0.06);
+  color: rgba(255,255,255,0.8);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s;
+  -webkit-app-region: no-drag;
+}
+
+.drop-fmt-btn:hover {
+  background: rgba(255,255,255,0.15);
+  color: #fff;
+}
+
+.drop-fmt-btn.extract-audio {
+  border-color: rgba(255,200,0,0.3);
+  color: rgba(255,200,0,0.8);
+}
+
+.drop-fmt-btn.extract-audio:hover {
+  background: rgba(255,200,0,0.1);
+  color: rgba(255,200,0,1);
+}
+
+.drop-cancel {
+  width: 100%;
+  padding: 8px;
+  border: none;
+  border-radius: 6px;
+  background: rgba(255,255,255,0.05);
+  color: rgba(255,255,255,0.3);
+  font-size: 12px;
+  cursor: pointer;
+  -webkit-app-region: no-drag;
+}
+
+.drop-cancel:hover {
+  background: rgba(255,255,255,0.08);
+  color: rgba(255,255,255,0.6);
+}

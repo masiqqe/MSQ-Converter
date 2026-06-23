@@ -1,5 +1,6 @@
 const { ipcRenderer, webUtils } = require('electron')
 const i18n = require('./i18n')
+let itemCounter = 0
 
 ipcRenderer.on('is-win11', (event, isWin11) => {
   document.body.classList.add(isWin11 ? 'win11' : 'win10')
@@ -54,9 +55,10 @@ ipcRenderer.on('convert-files', (event, data) => {
 })
 
 // Обновляем прогресс
-ipcRenderer.on('convert-progress', (event, { filePath, progress }) => {
-  const item = document.querySelector(`[data-path="${CSS.escape(filePath)}"]`)
+ipcRenderer.on('convert-progress', (event, { jobId, progress }) => {
+  const item = document.querySelector(`[data-job="${CSS.escape(jobId)}"]`)
   if (item) {
+    if (item.querySelector('.status-text').textContent === 'Cancelled') return
     item.querySelector('.progress-bar').style.width = progress + '%'
     item.querySelector('.status-text').textContent = 'Converting... ' + progress + '%'
   }
@@ -79,10 +81,10 @@ function checkAllDoneAndScheduleClose() {
   }
 }
 
-// Конвертация завершена
-ipcRenderer.on('convert-done', (event, { filePath }) => {
-  const item = document.querySelector(`[data-path="${CSS.escape(filePath)}"]`)
+ipcRenderer.on('convert-done', (event, { jobId, filePath }) => {
+  const item = document.querySelector(`[data-job="${CSS.escape(jobId)}"]`)
   if (item) {
+    if (item.querySelector('.status-text').textContent === 'Cancelled') return
     item.querySelector('.progress-bar').style.width = '100%'
     item.querySelector('.status-text').textContent = 'Done'
     item.querySelector('.check-icon').style.display = 'flex'
@@ -95,9 +97,10 @@ ipcRenderer.on('convert-done', (event, { filePath }) => {
 })
 
 // Ошибка конвертации
-ipcRenderer.on('convert-error', (event, { filePath, error }) => {
-  const item = document.querySelector(`[data-path="${CSS.escape(filePath)}"]`)
+ipcRenderer.on('convert-error', (event, { jobId, filePath, error }) => {
+  const item = document.querySelector(`[data-job="${CSS.escape(jobId)}"]`)
   if (item) {
+    if (item.querySelector('.status-text').textContent === 'Cancelled') return
     item.querySelector('.status-text').textContent = 'Error'
     item.querySelector('.status-text').style.color = 'red'
     item.querySelector('.progress-bar').style.background = 'red'
@@ -116,6 +119,7 @@ function addFileItem(filePath, targetFormat) {
   const emptyState = document.getElementById('emptyState')
   if (emptyState) emptyState.remove()
 
+  const jobId = 'job_' + (++itemCounter)
   const fileList = document.getElementById('fileList')
   const fileName = filePath.split('\\').pop()
   const fileDir = filePath.substring(0, filePath.lastIndexOf('\\'))
@@ -124,6 +128,7 @@ function addFileItem(filePath, targetFormat) {
   const item = document.createElement('div')
   item.className = 'file-item'
   item.setAttribute('data-path', filePath)
+  item.setAttribute('data-job', jobId)
   item.innerHTML = `
     <div class="file-info">
       <div class="file-path">${fileDir}\\${newName}</div>
@@ -135,45 +140,134 @@ function addFileItem(filePath, targetFormat) {
         <div class="progress-bar" style="width: 0%"></div>
       </div>
     </div>
-    <button class="cancel-btn" data-cancel="${filePath}">✕</button>
+    <button class="cancel-btn" data-cancel="${filePath}" data-job="${jobId}">✕</button>
     <div class="check-icon" style="display:none">✓</div>
   `
 
   fileList.appendChild(item)
 
   // Запускаем конвертацию
-  ipcRenderer.send('start-convert', { filePath, targetFormat })
+  ipcRenderer.send('start-convert', { filePath, targetFormat, jobId })
   addLog(fileName + ' → ' + targetFormat)
 }
 // Drag & Drop поддержка
-const body = document.body
+let pendingDropFiles = []
 
-body.addEventListener('dragover', (e) => {
+const fileList = document.getElementById('fileList')
+
+fileList.addEventListener('dragover', (e) => {
   e.preventDefault()
   e.stopPropagation()
-  document.getElementById('fileList').style.background = 'rgba(255,255,255,0.1)'
+  fileList.style.background = 'rgba(255,255,255,0.08)'
 })
 
-body.addEventListener('dragleave', (e) => {
+fileList.addEventListener('dragleave', (e) => {
   e.preventDefault()
   e.stopPropagation()
-  document.getElementById('fileList').style.background = ''
+  fileList.style.background = ''
 })
 
-body.addEventListener('drop', (e) => {
+fileList.addEventListener('drop', (e) => {
   e.preventDefault()
   e.stopPropagation()
-  document.getElementById('fileList').style.background = ''
+  fileList.style.background = ''
 
   const files = Array.from(e.dataTransfer.files)
   if (files.length === 0) return
 
-  files.forEach(file => {
-    const filePath = webUtils.getPathForFile(file)
-    const ext = file.name.split('.').pop().toLowerCase()
-    const targetFormat = getTargetFormat(ext)
-    addFileItem(filePath, targetFormat)
+  pendingDropFiles = files.map(file => ({
+    path: webUtils.getPathForFile(file),
+    ext: file.name.split('.').pop().toLowerCase()
+  }))
+
+  showDropMenu(pendingDropFiles)
+})
+
+function getFormatsForFiles(files) {
+  const videoFormats = ['mp4', 'mkv', 'avi', 'mov', 'webm', 'flv', 'wmv', 'ogv', 'ts', 'mpg', 'mpeg']
+  const audioFormats = ['mp3', 'wav', 'flac', 'aac', 'ogg', 'm4a', 'wma', 'opus']
+  const imageFormats = ['jpg', 'jpeg', 'png', 'webp', 'ico', 'bmp', 'tiff', 'tif', 'avif', 'gif']
+
+  const types = new Set(files.map(f => {
+    if (videoFormats.includes(f.ext)) return 'video'
+    if (audioFormats.includes(f.ext)) return 'audio'
+    if (imageFormats.includes(f.ext)) return 'image'
+    return 'unknown'
+  }))
+
+  let formats = []
+  let hasVideo = types.has('video')
+  let hasAudio = types.has('audio')
+  let hasImage = types.has('image')
+
+  if (hasVideo && !hasAudio && !hasImage) {
+    formats = [
+      { label: 'MP4', value: 'mp4' },
+      { label: 'MKV', value: 'mkv' },
+      { label: 'AVI', value: 'avi' },
+      { label: 'WEBM', value: 'webm' },
+      { label: 'MOV', value: 'mov' },
+      { label: 'GIF', value: 'gif' },
+      { label: 'MP3', value: 'mp3', audio: true },
+      { label: 'AAC', value: 'aac', audio: true },
+      { label: 'OGG', value: 'ogg', audio: true },
+      { label: 'WAV', value: 'wav', audio: true },
+    ]
+  } else if (hasAudio && !hasVideo && !hasImage) {
+    formats = [
+      { label: 'MP3', value: 'mp3' },
+      { label: 'WAV', value: 'wav' },
+      { label: 'FLAC', value: 'flac' },
+      { label: 'AAC', value: 'aac' },
+      { label: 'OGG', value: 'ogg' },
+    ]
+  } else if (hasImage && !hasVideo && !hasAudio) {
+    formats = [
+      { label: 'PNG', value: 'png' },
+      { label: 'JPG', value: 'jpg' },
+      { label: 'WEBP', value: 'webp' },
+      { label: 'ICO', value: 'ico' },
+      { label: 'GIF', value: 'gif' },
+      { label: 'AVIF', value: 'avif' },
+    ]
+  } else {
+    formats = [
+      { label: 'MP4', value: 'mp4' },
+      { label: 'MP3', value: 'mp3' },
+      { label: 'PNG', value: 'png' },
+    ]
+  }
+
+  return formats
+}
+
+function showDropMenu(files) {
+  const overlay = document.getElementById('dropOverlay')
+  const container = document.getElementById('dropFormats')
+  const formats = getFormatsForFiles(files)
+  const t = i18n[settings.lang]
+    document.querySelector('.drop-title').textContent = t.selectFormat
+    document.getElementById('dropCancel').textContent = t.cancel
+
+  container.innerHTML = ''
+  formats.forEach(fmt => {
+    const btn = document.createElement('button')
+    btn.className = 'drop-fmt-btn' + (fmt.audio ? ' extract-audio' : '')
+    btn.textContent = fmt.label
+    btn.addEventListener('click', () => {
+      overlay.classList.remove('open')
+      files.forEach(f => addFileItem(f.path, fmt.value)) 
+      pendingDropFiles = []
+    })
+    container.appendChild(btn)
   })
+
+  overlay.classList.add('open')
+}
+
+document.getElementById('dropCancel').addEventListener('click', () => {
+  document.getElementById('dropOverlay').classList.remove('open')
+  pendingDropFiles = []
 })
 
 function getTargetFormat(ext) {
@@ -202,7 +296,7 @@ function addScaleItem(filePath, percent, format) {
   const emptyState = document.getElementById('emptyState')
   if (emptyState) emptyState.remove()
 
-  const fileList = document.getElementById('fileList')
+  const jobId = 'job_' + (++itemCounter)
   const fileName = filePath.split('\\').pop()
   const ext = fileName.split('.').pop().toLowerCase()
   const outExt = format || ext
@@ -210,6 +304,7 @@ function addScaleItem(filePath, percent, format) {
   const item = document.createElement('div')
   item.className = 'file-item'
   item.setAttribute('data-path', filePath)
+  item.setAttribute('data-job', jobId)
   item.innerHTML = `
     <div class="file-info">
       <div class="file-path">${fileName} → Scale ${percent}%.${outExt}</div>
@@ -221,11 +316,11 @@ function addScaleItem(filePath, percent, format) {
         <div class="progress-bar" style="width: 0%"></div>
       </div>
     </div>
-    <button class="cancel-btn" data-cancel="${filePath}">✕</button>
+    <button class="cancel-btn" data-cancel="${filePath}" data-job="${jobId}">✕</button>
     <div class="check-icon" style="display:none">✓</div>
   `
   fileList.appendChild(item)
-  ipcRenderer.send('start-scale', { filePath, percent, format })
+  ipcRenderer.send('start-scale', { filePath, percent, format, jobId })
   addLog(fileName + ' → Scale ' + percent + '% .' + outExt)
 }
 
@@ -234,7 +329,7 @@ function addResolutionItem(filePath, resolution, format) {
   const emptyState = document.getElementById('emptyState')
   if (emptyState) emptyState.remove()
 
-  const fileList = document.getElementById('fileList')
+  const jobId = 'job_' + (++itemCounter)
   const fileName = filePath.split('\\').pop()
   const ext = fileName.split('.').pop().toLowerCase()
   const outExt = format || ext
@@ -242,6 +337,7 @@ function addResolutionItem(filePath, resolution, format) {
   const item = document.createElement('div')
   item.className = 'file-item'
   item.setAttribute('data-path', filePath)
+  item.setAttribute('data-job', jobId)
   item.innerHTML = `
     <div class="file-info">
       <div class="file-path">${fileName} → ${resolution}.${outExt}</div>
@@ -253,19 +349,20 @@ function addResolutionItem(filePath, resolution, format) {
         <div class="progress-bar" style="width: 0%"></div>
       </div>
     </div>
-    <button class="cancel-btn" data-cancel="${filePath}">✕</button>
+    <button class="cancel-btn" data-cancel="${filePath}" data-job="${jobId}">✕</button>
     <div class="check-icon" style="display:none">✓</div>
   `
   fileList.appendChild(item)
-  ipcRenderer.send('start-resolution', { filePath, resolution, format })
+  ipcRenderer.send('start-resolution', { filePath, resolution, format, jobId })
   addLog(fileName + ' → ' + resolution + ' .' + outExt)
 }
 
 document.addEventListener('click', (e) => {
   if (e.target.classList.contains('cancel-btn')) {
     const filePath = e.target.getAttribute('data-cancel')
-    ipcRenderer.send('cancel-convert', { filePath })
-    const item = document.querySelector(`[data-path="${CSS.escape(filePath)}"]`)
+    const jobId = e.target.getAttribute('data-job')
+    ipcRenderer.send('cancel-convert', { filePath, jobId })
+    const item = document.querySelector(`[data-job="${CSS.escape(jobId)}"]`)
     if (item) {
       item.querySelector('.status-text').textContent = 'Cancelled'
       item.querySelector('.status-text').style.color = '#999'
@@ -394,3 +491,32 @@ ipcRenderer.on('trigger-update-check', () => {
 ipcRenderer.on('update-available', (event, { latest, downloadUrl }) => {
   ipcRenderer.send('show-update-dialog', { latest, downloadUrl })
 })
+
+ipcRenderer.on('clipboard-image', (event, { path }) => {
+  showDropMenu([{ path, ext: 'png' }])
+})
+
+ipcRenderer.on('paste-files', (event, { files }) => {
+  const items = files.map(f => ({ path: f, ext: f.split('.').pop().toLowerCase() }))
+  pendingDropFiles = items  // добавь эту строку
+  showDropMenu(items)
+})
+
+ipcRenderer.on('debug-log', (event, msg) => {
+  addLog('[DEBUG] ' + msg)
+})
+
+document.addEventListener('keydown', (e) => {
+  if (e.ctrlKey && e.key === 'v') {
+    ipcRenderer.send('paste-image')
+    e.preventDefault()
+  }
+})
+
+// При клике куда угодно возвращаем фокус
+document.addEventListener('mousedown', () => {
+  document.body.focus()
+})
+
+// Фокус при загрузке
+setTimeout(() => document.body.focus(), 300)

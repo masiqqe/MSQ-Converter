@@ -2,10 +2,10 @@ const { execSync } = require('child_process')
 const path = require('path')
 
 const formats = {
-  image: ['gif', 'gif_low', 'png', 'webp', 'jpg', 'ico', 'pdf'],
-  video: ['mkv', 'mp4', 'mp4_low', 'webm', 'ogv', 'avi', 'gif', 'gif_low', 'ogg', 'wav', 'mp3', 'aac'],
+  image: ['gif', 'png', 'webp', 'jpg', 'ico', 'pdf'],
+  video: ['mkv', 'mp4', 'mp4_low', 'webm', 'ogv', 'avi', 'gif', 'gif_low', 'extract_mp3', 'extract_aac', 'extract_wav', 'ogg', 'mp3', 'aac'],
   audio: ['ogg', 'flac', 'wav', 'mp3', 'aac'],
-  gif: ['mkv', 'mp4', 'webm', 'avi', 'png', 'webp', 'jpg'],
+  gif: ['mkv', 'mp4', 'mp4_low', 'webm', 'avi', 'gif_low', 'png', 'webp', 'jpg'],
 }
 
 const scaleImageFormats = ['png', 'jpg', 'webp']
@@ -57,6 +57,9 @@ function reg(cmd) {
 function getLabel(fmt) {
   if (fmt === 'gif_low') return 'To Gif (low quality)'
   if (fmt === 'mp4_low') return 'To Mp4 (low quality)'
+  if (fmt === 'extract_mp3') return 'Extract Audio → MP3'
+  if (fmt === 'extract_aac') return 'Extract Audio → AAC'
+  if (fmt === 'extract_wav') return 'Extract Audio → WAV'
   return 'To ' + fmt.charAt(0).toUpperCase() + fmt.slice(1)
 }
 

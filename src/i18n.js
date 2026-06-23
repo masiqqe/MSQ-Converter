@@ -16,6 +16,8 @@ const i18n = {
     autoUpdate: 'Check for updates on startup',
     language: 'Language',
     license: 'This program is free software. You may redistribute it and/or modify it under the terms of the GNU General Public License.',
+    selectFormat: 'Select format',
+    cancel: 'Cancel',
   },
   ru: {
     emptyState: 'Перетащите файлы сюда или запустите через контекстное меню',
@@ -34,6 +36,8 @@ const i18n = {
     autoUpdate: 'Проверять обновления при запуске',
     language: 'Язык',
     license: 'Эта программа является свободным программным обеспечением. Вы можете распространять её и/или модифицировать в соответствии с условиями GNU General Public License.',
+    selectFormat: 'Выберите формат',
+    cancel: 'Отмена',
   }
 }
 

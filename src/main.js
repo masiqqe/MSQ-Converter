@@ -1,4 +1,4 @@
-const { app, BrowserWindow, ipcMain } = require('electron')
+const { app, BrowserWindow, ipcMain, Notification } = require('electron')
 const path = require('path')
 const { execSync } = require('child_process')
 const { convertFile, scaleFile, resolutionFile } = require('./converter')
@@ -13,32 +13,44 @@ const validExts = ['jpg','jpeg','png','webp','ico','bmp','gif','avif','tiff',
                    'mp4','mkv','avi','mov','webm','flv','wmv','ts','mpg','mpeg',
                    'mp3','wav','flac','aac','ogg','m4a','wma']
 
-const validFormats = ['png','jpg','webp','ico','gif','avif',
-                      'mp4','mkv','avi','webm','mov',
-                      'mp3','wav','flac','aac','ogg']
+const validFormats = ['png','jpg','webp','ico','gif','avif','gif_low',
+                      'mp4','mkv','avi','webm','mov','mp4_low',
+                      'mp3','wav','flac','aac','ogg',
+                      'extract_mp3','extract_aac','extract_wav']
 
 function parseArgs(argv) {
-  const args = argv.slice(2)
+  const ignoredFlags = ['--allow-file-access-from-files', '--enable-logging', '--disable-gpu', '--no-sandbox']
+  const raw = argv.filter(a => !ignoredFlags.includes(a) && a !== 'main.js' && !a.endsWith('main.js') && !a.endsWith('electron.exe') && a !== '.')
+
   let files = []
   let format = null
   let scale = null
   let resolution = null
 
-  for (let i = 0; i < args.length; i++) {
-    const arg = args[i].trim()
-    if (arg === '--format') {
-      if (args[i+1]) { format = args[i+1].trim().toLowerCase(); i++ }
-    } else if (arg === '--scale') {
-      if (args[i+1]) { scale = args[i+1].trim(); i++ }
-    } else if (arg === '--resolution') {
-      if (args[i+1]) { resolution = args[i+1].trim().toLowerCase(); i++ }
-    } else if (arg.length > 0 && !arg.startsWith('--')) {
+  const scaleValues = ['25', '50', '75']
+  const resolutionValues = ['720p', '1080p']
+
+  for (let i = 0; i < raw.length; i++) {
+    const arg = raw[i].trim()
+
+    if (arg === '--format' || arg === '--scale' || arg === '--resolution') continue
+
+    if (arg.startsWith('--')) continue
+
+    if (arg.includes('\\') || arg.includes('/')) {
       const ext = arg.split('.').pop().toLowerCase()
-      if (arg.includes('\\') || arg.includes('/')) {
-        if (validExts.includes(ext)) files.push(arg)
-      } else if (validFormats.includes(arg.toLowerCase())) {
-        if (!format) format = arg.toLowerCase()
-      }
+      if (validExts.includes(ext)) files.push(arg)
+      continue
+    }
+
+    const lower = arg.toLowerCase()
+
+    if (!scale && scaleValues.includes(lower)) {
+      scale = lower
+    } else if (!resolution && resolutionValues.includes(lower)) {
+      resolution = lower
+    } else if (!format && validFormats.includes(lower)) {
+      format = lower
     }
   }
 
@@ -56,11 +68,39 @@ function parseArgs(argv) {
 
 let mainWindow = null
 
+function handlePaste() {
+  const { clipboard } = require('electron')
+  const img = clipboard.readImage()
+  if (!img.isEmpty()) {
+    const fs = require('fs')
+    const os = require('os')
+    const tmpPath = require('path').join(os.tmpdir(), 'msq_clip_' + Date.now() + '.png')
+    fs.writeFileSync(tmpPath, img.toPNG())
+    mainWindow.webContents.send('clipboard-image', { path: tmpPath })
+    return
+  }
+  const { execFile } = require('child_process')
+  execFile('powershell', [
+    '-NoProfile', '-OutputFormat', 'Text', '-Command',
+    '[Console]::OutputEncoding = [System.Text.Encoding]::UTF8; Add-Type -AssemblyName System.Windows.Forms; [System.Windows.Forms.Clipboard]::GetFileDropList() | ForEach-Object { $_ }'
+  ], { timeout: 3000, encoding: 'utf8' }, (err, stdout) => {
+    if (!err && stdout.trim()) {
+      const validExts = ['jpg','jpeg','png','webp','ico','bmp','gif','avif','tiff','mp4','mkv','avi','mov','webm','flv','wmv','ts','mpg','mpeg','mp3','wav','flac','aac','ogg','m4a','wma']
+      const files = stdout.trim().split(/\r?\n/).map(l => l.trim()).filter(l => {
+        const ext = l.split('.').pop().toLowerCase()
+        return validExts.includes(ext)
+      })
+      if (files.length > 0) {
+        mainWindow.webContents.send('paste-files', { files })
+      }
+    }
+  })
+}
+
 function createWindow(files, format, scale, resolution) {
   const os = require('os')
   const release = os.release().split('.')[2]
   const isWin11 = parseInt(release) >= 22000
-  const launchedSilently = !files || files.length === 0
 
   mainWindow = new BrowserWindow({
     width: 700,
@@ -81,14 +121,18 @@ function createWindow(files, format, scale, resolution) {
 
   mainWindow.loadFile(path.join(__dirname, 'index.html'))
 
+  mainWindow.webContents.on('before-input-event', (event, input) => {
+    if (input.type === 'keyDown' && input.control && input.key === 'v') {
+      handlePaste()
+      event.preventDefault()
+    }
+  })
+
   mainWindow.webContents.on('did-finish-load', () => {
     mainWindow.webContents.send('is-win11', isWin11)
-    if (launchedSilently) {
-      mainWindow.hide()
-      mainWindow.webContents.send('trigger-update-check')
-    } else {
-      mainWindow.webContents.send('trigger-update-check')
-      if (files && files.length > 0) {
+    mainWindow.show()
+    mainWindow.webContents.send('trigger-update-check')
+    if (files && files.length > 0) {
         if (resolution) {
           mainWindow.webContents.send('resolution-files', { files, resolution, format })
         } else if (scale) {
@@ -96,13 +140,13 @@ function createWindow(files, format, scale, resolution) {
         } else {
           mainWindow.webContents.send('convert-files', { files, targetFormat: format })
         }
-      }
     }
   })
 }
 
 app.whenReady().then(() => {
   app.setAppUserModelId('MSQ Converter')
+
   const { files, format, scale, resolution } = parseArgs(process.argv)
 
   try {
@@ -112,6 +156,18 @@ app.whenReady().then(() => {
   }
 
   createWindow(files, format, scale, resolution)
+
+  const { globalShortcut } = require('electron')
+  globalShortcut.register('CommandOrControl+V', () => {
+    if (mainWindow && mainWindow.isFocused()) {
+      handlePaste()
+    }
+  })
+})
+
+app.on('will-quit', () => {
+  const { globalShortcut } = require('electron')
+  globalShortcut.unregisterAll()
 })
 
 app.on('second-instance', (event, argv) => {
@@ -136,93 +192,88 @@ app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') app.quit()
 })
 
-ipcMain.on('start-convert', async (event, { filePath, targetFormat }) => {
-  try {
-    await convertFile(filePath, targetFormat, (progress) => {
-      event.reply('convert-progress', { filePath, progress })
-    })
-    event.reply('convert-done', { filePath })
-  } catch (err) {
-    event.reply('convert-error', { filePath, error: err.message })
-  }
-})
-
-ipcMain.on('start-scale', async (event, { filePath, percent, format }) => {
-  try {
-    await scaleFile(filePath, percent, (progress) => {
-      event.reply('convert-progress', { filePath, progress })
-    }, format)
-    event.reply('convert-done', { filePath })
-  } catch (err) {
-    event.reply('convert-error', { filePath, error: err.message })
-  }
-})
-
-ipcMain.on('start-resolution', async (event, { filePath, resolution, format }) => {
-  try {
-    await resolutionFile(filePath, resolution, (progress) => {
-      event.reply('convert-progress', { filePath, progress })
-    }, format)
-    event.reply('convert-done', { filePath })
-  } catch (err) {
-    event.reply('convert-error', { filePath, error: err.message })
-  }
-})
-
 const activeProcesses = new Map()
 
-ipcMain.on('start-convert', async (event, { filePath, targetFormat }) => {
+ipcMain.on('start-convert', async (event, { filePath, targetFormat, jobId }) => {
   try {
     await convertFile(filePath, targetFormat, (progress) => {
-      event.reply('convert-progress', { filePath, progress })
-    }, (proc) => {
-      activeProcesses.set(filePath, proc)
+      event.reply('convert-progress', { jobId, filePath, progress })
+    }, (proc, outputPath) => {
+      activeProcesses.set(jobId, { proc, outputPath })
     })
-    activeProcesses.delete(filePath)
-    event.reply('convert-done', { filePath })
+    activeProcesses.delete(jobId)
+    event.reply('convert-done', { jobId, filePath })
+    new Notification({
+      title: 'MSQ Converter',
+      body: require('path').basename(filePath) + ' — готово',
+      icon: path.join(__dirname, 'assets', 'icon.png')
+    }).show()
   } catch (err) {
-    activeProcesses.delete(filePath)
-    event.reply('convert-error', { filePath, error: err.message })
+    activeProcesses.delete(jobId)
+    event.reply('convert-error', { jobId, filePath, error: err.message })
   }
 })
 
-ipcMain.on('start-scale', async (event, { filePath, percent, format }) => {
+ipcMain.on('start-scale', async (event, { filePath, percent, format, jobId }) => {
   try {
     await scaleFile(filePath, percent, (progress) => {
-      event.reply('convert-progress', { filePath, progress })
-    }, format, (proc) => {
-      activeProcesses.set(filePath, proc)
+      event.reply('convert-progress', { jobId, filePath, progress })
+    }, format, (proc, outputPath) => {
+      activeProcesses.set(jobId, { proc, outputPath })
     })
-    activeProcesses.delete(filePath)
-    event.reply('convert-done', { filePath })
+    activeProcesses.delete(jobId)
+    event.reply('convert-done', { jobId, filePath })
+    new Notification({
+      title: 'MSQ Converter',
+      body: require('path').basename(filePath) + ' — готово',
+      icon: path.join(__dirname, 'assets', 'icon.png')
+    }).show()
   } catch (err) {
-    activeProcesses.delete(filePath)
-    event.reply('convert-error', { filePath, error: err.message })
+    activeProcesses.delete(jobId)
+    event.reply('convert-error', { jobId, filePath, error: err.message })
   }
 })
 
-ipcMain.on('start-resolution', async (event, { filePath, resolution, format }) => {
+ipcMain.on('start-resolution', async (event, { filePath, resolution, format, jobId }) => {
   try {
     await resolutionFile(filePath, resolution, (progress) => {
-      event.reply('convert-progress', { filePath, progress })
-    }, format, (proc) => {
-      activeProcesses.set(filePath, proc)
+      event.reply('convert-progress', { jobId, filePath, progress })
+    }, format, (proc, outputPath) => {
+      activeProcesses.set(jobId, { proc, outputPath })
     })
-    activeProcesses.delete(filePath)
-    event.reply('convert-done', { filePath })
+    activeProcesses.delete(jobId)
+    event.reply('convert-done', { jobId, filePath })
+    new Notification({
+      title: 'MSQ Converter',
+      body: require('path').basename(filePath) + ' — готово',
+      icon: path.join(__dirname, 'assets', 'icon.png')
+    }).show()
   } catch (err) {
-    activeProcesses.delete(filePath)
-    event.reply('convert-error', { filePath, error: err.message })
+    activeProcesses.delete(jobId)
+    event.reply('convert-error', { jobId, filePath, error: err.message })
   }
 })
 
-ipcMain.on('cancel-convert', (event, { filePath }) => {
-  const proc = activeProcesses.get(filePath)
-  if (proc) {
-    proc.kill()
-    activeProcesses.delete(filePath)
+ipcMain.on('cancel-convert', (event, { jobId }) => {
+  const entry = activeProcesses.get(jobId)
+  if (entry) {
+    const { proc, outputPath } = entry
+    try {
+      require('child_process').execSync(`taskkill /PID ${proc.pid} /T /F`, { stdio: 'pipe' })
+    } catch(e) {
+      proc.kill()
+    }
+    activeProcesses.delete(jobId)
+    setTimeout(() => {
+      try {
+        const fs = require('fs')
+        if (outputPath && fs.existsSync(outputPath)) fs.unlinkSync(outputPath)
+      } catch(e) {}
+    }, 800)
   }
 })
+
+ipcMain.on('paste-image', () => handlePaste())
 
 ipcMain.on('window-minimize', () => mainWindow.minimize())
 ipcMain.on('window-maximize', () => {
@@ -263,7 +314,7 @@ function checkForUpdates() {
 })
     }).on('error', () => {
       if (mainWindow && !mainWindow.isVisible()) app.quit()
-  })
+    })
 }
 
 ipcMain.on('check-update', () => {
