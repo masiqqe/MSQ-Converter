@@ -149,10 +149,19 @@ app.whenReady().then(() => {
 
   const { files, format, scale, resolution } = parseArgs(process.argv)
 
+  const currentVersion = app.getVersion()
+  let registeredVersion = null
   try {
-    execSync('reg query "HKCU\\Software\\Classes\\SystemFileAssociations\\.jpg\\shell\\ConvertFile"', { stdio: 'pipe' })
-  } catch(e) {
+    const output = execSync('reg query "HKCU\\Software\\MSQConverter" /v RegisteredVersion', { stdio: 'pipe' }).toString()
+    const match = output.match(/RegisteredVersion\s+REG_SZ\s+(\S+)/)
+    if (match) registeredVersion = match[1]
+  } catch (e) {}
+
+  if (registeredVersion !== currentVersion) {
     registerAll()
+    try {
+      execSync(`reg add "HKCU\\Software\\MSQConverter" /v RegisteredVersion /d "${currentVersion}" /f`, { stdio: 'pipe' })
+    } catch (e) {}
   }
 
   createWindow(files, format, scale, resolution)
