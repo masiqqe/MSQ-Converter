@@ -1,0 +1,29 @@
+name: Build portable Windows EXE
+on:
+  workflow_dispatch:
+  push:
+    tags: ['v*']
+permissions:
+  contents: read
+jobs:
+  windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - run: npm test
+      - run: npm run build:win
+        env:
+          CSC_IDENTITY_AUTO_DISCOVERY: 'false'
+      - run: npm run verify:bundle
+      - run: ./scripts/windows-smoke.ps1
+        shell: pwsh
+      - uses: actions/upload-artifact@v4
+        with:
+          name: MSQ-Converter-portable-Windows-x64
+          path: dist/MSQ-Converter-*-portable-x64.exe
+          if-no-files-found: error

@@ -1,217 +1,112 @@
 <div align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="src/assets/icon-dark.png">
+    <img src="src/assets/icon-light.png" width="64" height="64" alt="MSQ Converter">
+  </picture>
 
-<img src="src/assets/icon.png" width="80" height="80" alt="MSQ Converter">
+# MSQ Converter 3.0
 
-# MSQ Converter
+**Файлы. Форматы. Результат.**
 
-**Fast and free file converter for Windows — right from the context menu**
+Конвертер изображений, видео и аудио для Windows. Один portable EXE, очередь файлов и быстрые действия из Проводника.
 
-[![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
-[![Platform](https://img.shields.io/badge/Platform-Windows-lightgrey.svg)](https://github.com/masiqqe/MSQ-Converter/releases)
-[![Release](https://img.shields.io/github/v/release/masiqqe/MSQ-Converter)](https://github.com/masiqqe/MSQ-Converter/releases/latest)
-[![Donate](https://img.shields.io/badge/Donate-DonationAlerts-orange.svg)](https://www.donationalerts.com/r/masiqqe)
+[![Windows x64](https://img.shields.io/badge/Windows-x64-737373?style=flat-square)](https://github.com/masiqqe/MSQ-Converter/releases/latest)
+[![Version 3.0](https://img.shields.io/badge/version-3.0-8b5cf6?style=flat-square)](https://github.com/masiqqe/MSQ-Converter/releases)
+[![GPL v3](https://img.shields.io/badge/license-GPL_v3-737373?style=flat-square)](LICENSE)
 
-[Download](#download) · [Features](#features) · [Supported Formats](#supported-formats) · [Русский](#русский)
-
----
-
-![Demo](docs/demo.gif)
-
-</div>
-
-## Download
-
-Go to [Releases](https://github.com/masiqqe/MSQ-Converter/releases/latest) and download `MSQ-Converter-Setup.exe`
-
-No dependencies required — FFmpeg and Sharp are bundled inside.
-
----
-
-## Features
-
-- **Context menu integration** — right-click any file in Explorer and convert instantly
-- **Drag & Drop** — drag files directly into the app window
-- **Real-time progress bar** — shows exact percentage during conversion
-- **Cancel anytime** — stop any conversion with the ✕ button
-- **Unique output names** — never overwrites originals, adds `(2)`, `(3)` etc.
-- **Scale images and video** — resize to 25%, 75%, 50% directly from context menu
-- **Resolution downscale** — convert video to 720p or 1080p
-- **Single instance** — second launch sends files to already open window
-- **Auto-close** — window closes automatically 5 seconds after all conversions finish
-- **Auto-update** — checks for new versions on startup and installs silently
-- **English / Russian** — language switch in settings
-- **Dark theme** — clean minimal UI with custom titlebar
-- **Windows 11 Acrylic** — blur effect on Windows 11
-
----
-
-## Supported Formats
-
-### Images
-| Input | Output |
-|-------|--------|
-| JPG, JPEG, PNG, WEBP, ICO, BMP, TIFF, AVIF, PDF | GIF, PNG, WEBP, JPG, ICO, PDF |
-
-### Video
-| Input | Output |
-|-------|--------|
-| MP4, MKV, AVI, MOV, WEBM, FLV, WMV, TS, MPG, MPEG | MKV, MP4, WEBM, OGV, AVI, GIF, OGG, WAV, MP3, AAC |
-
-### Audio
-| Input | Output |
-|-------|--------|
-| MP3, WAV, FLAC, AAC, OGG, M4A, WMA, OPUS | OGG, FLAC, WAV, MP3, АAC |
-
-### GIF
-| Input | Output |
-|-------|--------|
-| GIF | MKV, MP4, WEBM, AVI, PNG, WEBP, JPG |
-
----
-
-## Screenshots
-
-<div align="center">
-
-<img src="docs/preview.png" alt="Main window"><br>
-<sub>Main window</sub>
-
-<br><br>
-
-<img src="docs/settings.png" alt="Settings"><br>
-<sub>Settings — language, auto-close, auto-update</sub>
+[**Скачать для Windows**](https://github.com/masiqqe/MSQ-Converter/releases/latest) · [Форматы](#форматы) · [Сборка](#сборка) · [Сообщить об ошибке](https://github.com/masiqqe/MSQ-Converter/issues)
 
 </div>
 
----
+![Очередь файлов — тёмная тема](docs/screenshots/queue-dark.png)
 
-## How it works
+## Рабочее пространство для конвертации
 
-1. Install `MSQ-Converter-Setup.exe`
-2. Right-click any image, video, audio or GIF in Explorer
-3. Choose **MSQ Converter** → select target format
-4. Done — converted file appears in the same folder
+В центре приложения — очередь: имя файла, формат результата, размер, статус и прогресс. Добавьте файлы или папку, выберите формат и запустите обработку. Формат можно задать отдельно для каждого файла или сразу для выделенных строк.
 
-Or drag files directly into the app window.
+- **Изображения, видео, аудио, GIF и PDF** в одном окне.
+- **Живой прогресс**, скорость и текущий файл при обработке FFmpeg; отмена и повтор неудачных задач.
+- **Меню строки**: открыть исходник или результат, показать в Проводнике, изменить Scale, посмотреть ошибку.
+- **Scale 25 / 50 / 75 / 100%**, профили 720p / 1080p, извлечение аудио и облегчённые GIF / MP4.
+- **История задач** текущего сеанса с результатами и ошибками.
+- **Светлая и тёмная темы**, свой акцентный цвет, тематические иконки и короткие анимации.
 
----
+Конвертация выполняется локально. Исходные файлы сохраняются, а результаты записываются рядом с ними. Если имя занято, приложение добавляет номер: `photo (2).png`.
 
-## Built with
+### Светлая тема
 
-- [Electron](https://www.electronjs.org/)
-- [FFmpeg](https://ffmpeg.org/) via `@ffmpeg-installer/ffmpeg`
-- [Sharp](https://sharp.pixelplumbing.com/)
-- [Inno Setup](https://jrsoftware.org/isinfo.php)
+![Очередь файлов — светлая тема](docs/screenshots/queue-light.png)
 
----
+<details>
+<summary>Внешний вид и настройки</summary>
 
-## Support the author
+![Настройки MSQ Converter 3.0](docs/screenshots/settings.png)
 
-[![Donate](https://img.shields.io/badge/Donate-DonationAlerts-orange.svg)](https://www.donationalerts.com/r/masiqqe)
+Тема, акцентный цвет, язык, авто­закрытие, проверка обновлений, меню Проводника и создание ярлыка. Настройки сохраняются автоматически. Системное уменьшение движения отключает анимации.
 
-## License
+</details>
 
-[GNU General Public License v3.0](LICENSE)
+## Запуск
 
----
+1. Откройте [Releases](https://github.com/masiqqe/MSQ-Converter/releases/latest) и скачайте **`MSQ-Converter-3.0.0-portable-x64.exe`**.
+2. Сохраните EXE в постоянную папку и запустите его. Установка и отдельный Node.js для работы не нужны.
+3. Добавьте файлы кнопкой, перетаскиванием или через `Ctrl+V`; выберите формат и нажмите **Конвертировать**.
 
----
+Для интеграции включите **Настройки → Меню Проводника**. В Windows 11 оно доступно через **Показать дополнительные параметры**. Регистрация выполняется для текущего пользователя. При отключении переключателя пункты MSQ удаляются.
 
-<div align="center">
-
-# Русский
-
-[Скачать](#скачать) · [Возможности](#возможности) · [Форматы](#форматы)
-
----
-
-![Demo](docs/demo.gif)
-
-</div>
-
-## Скачать
-
-Перейди в [Releases](https://github.com/masiqqe/MSQ-Converter/releases/latest) и скачай `MSQ-Converter-Setup.exe`
-
-Никаких зависимостей — FFmpeg и Sharp встроены внутрь.
-
----
-
-## Возможности
-
-- **Контекстное меню** — правая кнопка мыши по любому файлу в Проводнике и конвертируй сразу
-- **Drag & Drop** — перетащи файлы прямо в окно приложения
-- **Реальный прогресс бар** — показывает точный процент во время конвертации
-- **Отмена в любой момент** — останови конвертацию кнопкой ✕
-- **Уникальные имена** — никогда не перезаписывает оригиналы, добавляет `(2)`, `(3)` и т.д.
-- **Масштабирование** — уменьши изображение или видео до 25%, 75%, 50% прямо из меню
-- **Смена разрешения** — конвертируй видео в 720p или 1080p
-- **Один экземпляр** — второй запуск передаёт файлы в уже открытое окно
-- **Автозакрытие** — окно закрывается через 5 секунд после завершения всех конвертаций
-- **Автообновление** — проверяет новые версии при запуске и устанавливает автоматически
-- **Английский / Русский** — переключение языка в настройках
-- **Тёмная тема** — чистый минималистичный интерфейс с кастомным тайтлбаром
-- **Windows 11 Acrylic** — эффект размытия на Windows 11
-
----
+Первый запуск подготавливает служебный runtime в `%LOCALAPPDATA%\MSQConverter\runtime`. Последующие запуски используют готовый кеш. Настройки находятся в `%APPDATA%\MSQConverter\settings.json`. Для обновления закройте приложение и запустите новый EXE; встроенная проверка сообщает о новой версии на GitHub.
 
 ## Форматы
 
-### Изображения
-| Входные | Выходные |
-|---------|----------|
-| JPG, JPEG, PNG, WEBP, ICO, BMP, TIFF, AVIF, PDF | GIF, PNG, WEBP, JPG, ICO, PDF |
+| Источник | Входные форматы | Результат |
+| :-- | :-- | :-- |
+| Изображения / PDF | JPG, JPEG, PNG, WEBP, ICO, BMP, TIFF, TIF, AVIF, SVG, PDF | PNG, JPG, WEBP, ICO, GIF, AVIF, PDF |
+| Видео | MP4, MKV, AVI, MOV, WEBM, FLV, WMV, OGV, TS, MPG, MPEG | MP4, MKV, AVI, MOV, WEBM, OGV, GIF; MP3, AAC, OGG, WAV, FLAC |
+| Аудио | MP3, WAV, FLAC, AAC, OGG, M4A, WMA, OPUS | MP3, WAV, FLAC, AAC, OGG |
+| GIF | GIF | MP4, MKV, AVI, MOV, WEBM, OGV, GIF, PNG, WEBP, JPG, ICO, AVIF, PDF |
 
-### Видео
-| Входные | Выходные |
-|---------|----------|
-| MP4, MKV, AVI, MOV, WEBM, FLV, WMV, TS, MPG, MPEG | MKV, MP4, WEBM, OGV, AVI, GIF, OGG, WAV, MP3, AAC |
+`Scale` меняет ширину и высоту относительно исходника: 50% означает половину каждого размера. Это не обещание уменьшить размер файла на 50%. Пункт 100% возвращает исходный масштаб. Доступные операции зависят от типа файла и выбранного результата.
 
-### Аудио
-| Входные | Выходные |
-|---------|----------|
-| MP3, WAV, FLAC, AAC, OGG, M4A, WMA, OPUS | OGG, FLAC, WAV, MP3, AAC |
+PDF обрабатывается с первой страницы; GIF в статичное изображение — с первого кадра. Поддержка видео зависит также от кодека. Для длинных записей предусмотрены облегчённые GIF / MP4; время обработки зависит от разрешения, длительности и процессора.
 
-### GIF
-| Входные | Выходные |
-|---------|----------|
-| GIF | MKV, MP4, WEBM, AVI, PNG, WEBP, JPG |
+## Горячие клавиши
+
+| Сочетание | Действие |
+| :-- | :-- |
+| `Ctrl+O` / `Ctrl+Shift+O` | Добавить файлы / папку |
+| `Ctrl+V` | Вставить файлы или изображение из буфера |
+| `Ctrl+Enter` | Запустить конвертацию |
+| `Ctrl+A` | Выделить очередь |
+| `Delete` | Удалить выделенные неактивные строки |
+| `Shift+F10` | Контекстное меню текущей строки |
+| `Ctrl+,` | Настройки |
+| `Escape` | Закрыть меню / настройки или снять выделение |
+
+## Сборка
+
+**Windows x64 · Node.js 22 · npm**
+
+```powershell
+npm ci
+npm test
+npm run build:win
+npm run verify:bundle
+```
+
+Или запустите `build-portable.cmd`. Результат: `dist/MSQ-Converter-3.0.0-portable-x64.exe`. Для разработки: `npm start`.
+
+Workflow **Build portable Windows EXE** также доступен в GitHub Actions: ручной запуск или тег `v*`. Он собирает EXE, проверяет комплект Windows-зависимостей и запускает проверку повторных portable-запусков. Готовый файл публикуется как artifact workflow.
+
+В комплект входят FFmpeg, Sharp и PDF-инструменты. Сборка проверяет размер и SHA-256 FFmpeg, целостность Windows-бинарников, иконки и содержимое финального EXE. `build/portable-cache.nsi` — оболочка запуска единого EXE с кешем runtime. Мастеры актуальных иконок находятся в `src/assets`; пересоздать PNG / ICO можно командой `node scripts/make-icons.js`.
+
+## English
+
+MSQ Converter is a portable Windows x64 converter for images, video, audio, GIF and PDF. Add files or folders, choose an output format and run conversions from a compact queue. Includes progress, cancellation, retries, Explorer integration, scaling, light/dark themes and custom accent colors. Processing stays on your computer; source files are preserved.
+
+Download the EXE from [Releases](https://github.com/masiqqe/MSQ-Converter/releases/latest). No separate runtime installation is required. The application prepares its runtime cache on first launch.
 
 ---
 
-## Скриншоты
+**masiqqe** · [Сайт](https://www.masiqqe.ru/) · [Telegram](https://t.me/masiqqee) · [Поддержать проект](https://www.donationalerts.com/r/masiqqe)
 
-<div align="center">
-
-<img src="docs/preview.png" alt="Главное окно"><br>
-<sub>Главное окно</sub>
-
-<br><br>
-
-<img src="docs/settings.png" alt="Настройки"><br>
-<sub>Настройки — язык, автозакрытие, автообновление</sub>
-
-</div>
-
----
-
-## Как использовать
-
-1. Установи `MSQ-Converter-Setup.exe`
-2. Нажми правой кнопкой на любое изображение, видео, аудио или GIF в Проводнике
-3. Выбери **MSQ Converter** → выбери нужный формат
-4. Готово — конвертированный файл появится в той же папке
-
-Или перетащи файлы прямо в окно приложения.
-
----
-
-## Поддержать автора
-
-[![Donate](https://img.shields.io/badge/Donate-DonationAlerts-orange.svg)](https://www.donationalerts.com/r/masiqqe)
-
-## Лицензия
-
-[GNU General Public License v3.0](LICENSE)
-
-by [masiqqe](https://github.com/masiqqe)
+[GNU GPL v3](LICENSE)

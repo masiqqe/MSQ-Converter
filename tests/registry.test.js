@@ -1,0 +1,21 @@
+const test=require('node:test'),assert=require('node:assert/strict')
+const {command,registrationText}=require('../src/registry'),{extensions}=require('../src/formats')
+test('registry quotes portable paths and removes every supported extension',()=>{
+ const info={exe:'C:\\My Apps\\MSQ Portable.exe',prefix:[]}
+ assert.equal(command(['--format','png'],info),'"C:\\My Apps\\MSQ Portable.exe" "--format" "png" "%1"')
+ const enabled=registrationText(info).join('\r\n'),disabled=registrationText(null,false).join('\r\n')
+ assert.ok(enabled.includes('MSQ Portable.exe'));assert.ok(enabled.includes('resolution720p'));assert.ok(enabled.includes('scale50'))
+ assert.ok(enabled.includes('--format=png'));assert.ok(enabled.includes('--scale=50'));assert.ok(enabled.includes('--resolution=720p'))
+ assert.ok(!enabled.includes('\\"--format\\"'))
+ for(const ext of Object.values(extensions).flat())assert.ok(disabled.includes(`\\.${ext}\\shell\\MSQConverter]`))
+ assert.ok(!disabled.includes('MUIVerb'));assert.ok(!enabled.includes('HKEY_LOCAL_MACHINE'))
+})
+test('Explorer Scale submenu groups dimensions and resets 100% without an invalid scale argument',()=>{
+ const lines=registrationText({exe:'C:\\MSQ\\Converter.exe',prefix:[]})
+ const text=lines.join('\n')
+ assert.ok(text.includes('\\.png\\shell\\MSQConverter\\shell\\scale]'))
+ for(const percent of ['25','50','75','100'])assert.ok(text.includes('\\.png\\shell\\MSQConverter\\shell\\scale\\shell\\scale'+percent+'\\shell\\png\\command]'))
+ const index=lines.findIndex(line=>line.includes('\\.png\\shell\\MSQConverter\\shell\\scale\\shell\\scale100\\shell\\png\\command]'))
+ assert.ok(lines[index+1].includes('--format=png'));assert.ok(!lines[index+1].includes('--scale'))
+ assert.ok(!text.includes('--scale=100'));assert.ok(!text.includes('\\.mp3\\shell\\MSQConverter\\shell\\scale]'))
+})

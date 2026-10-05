@@ -1,143 +1,70 @@
-const { execSync } = require('child_process')
+const { execFile } = require('child_process')
+const fs = require('fs'), os = require('os')
+const { promisify } = require('util')
+const execFileAsync = promisify(execFile)
 const path = require('path')
-
-const formats = {
-  image: ['gif', 'png', 'webp', 'jpg', 'ico', 'pdf'],
-  video: ['mkv', 'mp4', 'mp4_low', 'webm', 'ogv', 'avi', 'gif', 'gif_low', 'extract_mp3', 'extract_aac', 'extract_wav', 'ogg', 'mp3', 'aac'],
-  audio: ['ogg', 'flac', 'wav', 'mp3', 'aac'],
-  gif: ['mkv', 'mp4', 'mp4_low', 'webm', 'avi', 'gif_low', 'png', 'webp', 'jpg'],
+const { extensions, formats, realFormat } = require('./formats')
+const {iconPaths}=require('./app-icons')
+function launchInfo(theme='dark') {
+  const { app } = require('electron')
+  // The cached runtime is persistent. Explorer skips the outer archive/decompression.
+  const exe = process.execPath
+  return {exe,icon:iconPaths(theme,{isPackaged:app.isPackaged,resourcesPath:process.resourcesPath}).ico,prefix: app.isPackaged ? [] : [path.join(__dirname,'..')]}
 }
-
-const scaleImageFormats = ['png', 'jpg', 'webp']
-const scaleVideoFormats = ['mp4', 'webm', 'ogv']
-const scaleGifFormats = ['mp4', 'gif', 'ogv']
-
-const extensions = {
-  image: ['jpg','jpeg','png','webp','ico','bmp','tiff','avif','pdf'],
-  video: ['mp4','mkv','avi','mov','webm','flv','wmv','ts','mpg','mpeg'],
-  audio: ['mp3','wav','flac','aac','ogg','m4a','wma','opus'],
-  gif: ['gif'],
+function command(flags, info=launchInfo()) {
+  return [info.exe,...info.prefix,...flags,'%1'].map(v => `"${v}"`).join(' ')
 }
-
-function getElectronCmd() {
-  let electronExe
-  // Если запущено из установленной версии
-  if (process.execPath && !process.execPath.includes('node_modules')) {
-    electronExe = process.execPath
-  } else {
-    // Dev версия
-    electronExe = path.join(__dirname, '..', 'node_modules', 'electron', 'dist', 'electron.exe')
-  }
-  const mainJs = path.join(__dirname, 'main.js')
-  return { electronExe, mainJs }
+function key(ext) { return `HKEY_CURRENT_USER\\Software\\Classes\\SystemFileAssociations\\.${ext}\\shell\\MSQConverter` }
+function put(lines,k,name,value) {
+  const escape = v => v.replace(/\\/g,'\\\\').replace(/"/g,'\\"')
+  lines.push(`[${k}]`, (name ? '"'+escape(name)+'"' : '@')+'="'+escape(value)+'"', '')
 }
-
-function getCommand(format) {
-  const { electronExe, mainJs } = getElectronCmd()
-  if (process.execPath && !process.execPath.includes('node_modules')) {
-    return `\\"${electronExe}\\" --format ${format} \\"%1\\"`
-  }
-  return `\\"${electronExe}\\" \\"${mainJs}\\" --format ${format} \\"%1\\"`
-}
-
-function getScaleFormatCommand(percent, format) {
-  const { electronExe, mainJs } = getElectronCmd()
-  if (process.execPath && !process.execPath.includes('node_modules')) {
-    return `\\"${electronExe}\\" --scale ${percent} --format ${format} \\"%1\\"`
-  }
-  return `\\"${electronExe}\\" \\"${mainJs}\\" --scale ${percent} --format ${format} \\"%1\\"`
-}
-
-function reg(cmd) {
+async function importRegistry(lines) {
+  const dir = await fs.promises.mkdtemp(path.join(os.tmpdir(),'msq-reg-'))
+  const file = path.join(dir,'menu.reg')
   try {
-    execSync(cmd, { stdio: 'pipe' })
-  } catch (e) {}
+    await fs.promises.writeFile(file,'\ufeff'+lines.join('\r\n'),'utf16le')
+    await execFileAsync('reg.exe',['import',file],{windowsHide:true,timeout:30000})
+  } finally { await fs.promises.rm(dir,{recursive:true,force:true}) }
 }
-
-function getLabel(fmt) {
-  if (fmt === 'gif_low') return 'To Gif (low quality)'
-  if (fmt === 'mp4_low') return 'To Mp4 (low quality)'
-  if (fmt === 'extract_mp3') return 'Extract Audio → MP3'
-  if (fmt === 'extract_aac') return 'Extract Audio → AAC'
-  if (fmt === 'extract_wav') return 'Extract Audio → WAV'
-  return 'To ' + fmt.charAt(0).toUpperCase() + fmt.slice(1)
-}
-
-function addScaleSubmenu(menuKey, percent, scaleFormats) {
-  const key = `90_scale${percent}`
-  const label = `Scale ${percent}%`
-  const sk = `${menuKey}\\shell\\${key}`
-  reg(`reg add "${sk}" /v "MUIVerb" /d "${label}" /f`)
-  reg(`reg add "${sk}" /v "SubCommands" /d "" /f`)
-  scaleFormats.forEach((fmt, i) => {
-    const fk = `${sk}\\shell\\${String(i).padStart(2,'0')}_${fmt}`
-    reg(`reg add "${fk}" /ve /d "${getLabel(fmt)}" /f`)
-    reg(`reg add "${fk}\\command" /ve /d "${getScaleFormatCommand(percent, fmt)}" /f`)
-  })
-}
-
-function addImageScaleSubmenu(menuKey) {
-  const scaleOptions = [
-    { key: '90_scale75', label: 'Scale 75%', value: '75' },
-    { key: '91_scale25', label: 'Scale 25%', value: '25' },
-  ]
-  scaleOptions.forEach(({ key, label, value }) => {
-    const sk = `${menuKey}\\shell\\${key}`
-    reg(`reg add "${sk}" /v "MUIVerb" /d "${label}" /f`)
-    reg(`reg add "${sk}" /v "SubCommands" /d "" /f`)
-    scaleImageFormats.forEach((fmt, i) => {
-      const fk = `${sk}\\shell\\${String(i).padStart(2,'0')}_${fmt}`
-      reg(`reg add "${fk}" /ve /d "${getLabel(fmt)}" /f`)
-      reg(`reg add "${fk}\\command" /ve /d "${getScaleFormatCommand(value, fmt)}" /f`)
+function registrationText(info, enabled=true) {
+  const lines=['Windows Registry Editor Version 5.00','']
+  for (const [type,exts] of Object.entries(extensions)) for (const ext of exts) {
+    const k=key(ext)
+    lines.push(`[-${k}]`, `[-HKEY_CURRENT_USER\\Software\\Classes\\SystemFileAssociations\\.${ext}\\shell\\ConvertFile]`, '')
+    if (!enabled) continue
+    put(lines,k,'MUIVerb','MSQ Converter'); put(lines,k,'SubCommands',''); put(lines,k,'Icon',`"${info.icon || info.exe}",0`)
+    formats[type].forEach((fmt,i) => {
+      const sub=k+'\\shell\\'+String(i).padStart(2,'0')+'_'+fmt
+      const label=fmt.startsWith('extract_') ? 'Extract audio → '+realFormat(fmt).toUpperCase() : '→ '+realFormat(fmt).toUpperCase()+(fmt.endsWith('_low') ? ' (low quality)' : '')
+      put(lines,sub,'',label); put(lines,sub+'\\command','',command(['--format='+fmt],info))
     })
-  })
-}
-
-function registerExtension(ext, type) {
-  const isInstalled = !process.execPath.includes('node_modules')
-const iconPath = isInstalled
-  ? path.join(path.dirname(process.execPath), 'resources', 'assets', 'icon.ico')
-  : path.join(__dirname, 'assets', 'icon.ico')
-  const menuKey = `HKCU\\Software\\Classes\\SystemFileAssociations\\.${ext}\\shell\\ConvertFile`
-
-  reg(`reg delete "${menuKey}" /f`)
-  reg(`reg delete "HKCU\\Software\\Classes\\.${ext}\\shell\\ConvertFile" /f`)
-
-  reg(`reg add "${menuKey}" /v "MUIVerb" /d "MSQ Converter" /f`)
-  reg(`reg add "${menuKey}" /v "SubCommands" /d "" /f`)
-  reg(`reg add "${menuKey}" /v "Icon" /d "${iconPath},0" /f`)
-  
-  formats[type].forEach((fmt, i) => {
-    const subKey = `${menuKey}\\shell\\${String(i).padStart(2,'0')}_${fmt}`
-    reg(`reg add "${subKey}" /ve /d "${getLabel(fmt)}" /f`)
-    reg(`reg add "${subKey}\\command" /ve /d "${getCommand(fmt)}" /f`)
-  })
-
-  if (type === 'image') {
-    addImageScaleSubmenu(menuKey)
+    if (type !== 'audio') for (const percent of ['25','50','75','100']) {
+      const scale=k+'\\shell\\scale'
+      if(percent==='25'){put(lines,scale,'MUIVerb','Scale');put(lines,scale,'SubCommands','');put(lines,scale,'Icon',`"${info.icon || info.exe}",0`)}
+      const sub=scale+'\\shell\\scale'+percent; put(lines,sub,'MUIVerb',percent==='100' ? '100% (original size)' : percent+'%'); put(lines,sub,'SubCommands','')
+      for (const fmt of type === 'image' ? ['png','jpg','webp'] : ['mp4','webm','gif']) {
+        const sk=sub+'\\shell\\'+fmt; put(lines,sk,'',fmt.toUpperCase()); put(lines,sk+'\\command','',command(percent==='100' ? ['--format='+fmt] : ['--scale='+percent,'--format='+fmt],info))
+      }
+    }
+    if (['video','gif'].includes(type)) for (const resolution of ['720p','1080p']) {
+      const sub=k+'\\shell\\resolution'+resolution; put(lines,sub,'',resolution+' → MP4')
+      put(lines,sub+'\\command','',command(['--resolution='+resolution,'--format=mp4'],info))
+    }
   }
-
-  if (type === 'video') {
-    addScaleSubmenu(menuKey, '50', scaleVideoFormats)
-  }
-
-  if (type === 'gif') {
-    addScaleSubmenu(menuKey, '50', scaleGifFormats)
-  }
+  return lines
 }
-
-function registerAll() {
-  Object.entries(extensions).forEach(([type, exts]) => {
-    exts.forEach(ext => registerExtension(ext, type))
-  })
+async function registerAll(theme='dark') {
+  if (process.platform !== 'win32') throw new Error('Explorer integration is Windows-only')
+  await importRegistry(registrationText(launchInfo(theme))); return true
 }
-
-function unregisterAll() {
-  Object.entries(extensions).forEach(([type, exts]) => {
-    exts.forEach(ext => {
-      reg(`reg delete "HKCU\\Software\\Classes\\SystemFileAssociations\\.${ext}\\shell\\ConvertFile" /f`)
-    })
-  })
+async function unregisterAll() {
+  if (process.platform !== 'win32') throw new Error('Explorer integration is Windows-only')
+  await importRegistry(registrationText(null,false)); return false
 }
-
-module.exports = { registerAll, unregisterAll }
+async function refreshShellIcons(){
+ if(process.platform!=='win32')return
+ const code='Add-Type -TypeDefinition \'using System; using System.Runtime.InteropServices; public static class MSQShell { [DllImport("shell32.dll")] public static extern void SHChangeNotify(uint e, uint f, IntPtr a, IntPtr b); }\'; [MSQShell]::SHChangeNotify(0x08000000,0,[IntPtr]::Zero,[IntPtr]::Zero)'
+ await execFileAsync('powershell.exe',['-NoProfile','-NonInteractive','-Command',code],{windowsHide:true,timeout:10000})
+}
+module.exports={registerAll,unregisterAll,command,registrationText,refreshShellIcons}

@@ -1,107 +1,31 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="ru" data-theme="dark">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>MSQ Converter</title>
-  <link rel="stylesheet" href="style.css">
-  <link rel="icon" href="assets/icon.png">
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'none'; object-src 'none'; base-uri 'none'">
+<title>MSQ Converter</title><link rel="stylesheet" href="style.css"><link rel="icon">
 </head>
-<body tabindex="0">
-  <div class="titlebar">
-    <div class="titlebar-drag">
-      <img src="assets/icon.png" class="titlebar-icon">
-      <span class="titlebar-title">MSQ Converter</span>
-    </div>
-    <div class="titlebar-controls">
-      <div class="win-controls-row">
-        <button class="win-btn" id="minBtn"><span class="win-btn-icon">─</span></button>
-        <button class="win-btn" id="maxBtn"><span class="win-btn-icon">□</span></button>
-        <button class="win-btn close" id="closeBtn"><span class="win-btn-icon">✕</span></button>
-      </div>
-      <div class="action-controls">
-        <button class="icon-btn" id="historyBtn" title="Logs">☰</button>
-        <button class="icon-btn" id="settingsBtn" title="Settings">⚙</button>
-      </div>
-    </div>
-  </div>
-
-  <div class="file-list" id="fileList" droppable="true">
-    <div class="empty-state" id="emptyState">
-      <p>Drag files here or open via context menu</p>
-    </div>
-  </div>
-
-  <div class="log-panel" id="logPanel">
-    <div class="log-header">
-      <span>Logs</span>
-      <button class="log-close" id="logClose">✕</button>
-    </div>
-    <div class="log-body" id="logBody"></div>
-  </div>
-
-  <div class="settings-overlay" id="settingsOverlay">
-    <div class="settings-modal">
-      <div class="settings-header">
-        <span>Settings</span>
-        <button class="settings-close" id="settingsClose">✕</button>
-      </div>
-      <div class="settings-tabs">
-        <button class="settings-tab active" data-tab="general">Settings</button>
-        <button class="settings-tab" data-tab="about">About</button>
-      </div>
-      <div class="settings-body">
-        <div class="tab-content active" id="tab-general">
-          <div class="setting-row">
-            <span class="setting-label">Language</span>
-            <select class="setting-select" id="settingLang">
-              <option value="en">English</option>
-              <option value="ru">Русский</option>
-            </select>
-          </div>
-          <div class="setting-row">
-            <span class="setting-label">Auto-close after all conversions done</span>
-            <button class="toggle-btn" id="toggleAutoClose">Yes</button>
-          </div>
-          <div class="setting-row">
-            <span class="setting-label">Check for updates on startup</span>
-            <button class="toggle-btn" id="toggleAutoUpdate">Yes</button>
-          </div>
-        </div>
-        <div class="tab-content" id="tab-about">
-          <div class="about-top">
-            <div class="about-text">
-              <div class="about-title">MSQ Converter</div>
-              <div class="about-version" id="aboutVersion">v1.0.0</div>
-              <div class="about-author">by masiqqe</div>
-              <div class="about-license">This program is free software. You may redistribute it and/or modify it under the terms of the GNU General Public License.</div>
-            </div>
-            <div class="about-icon" id="aboutIcon"></div>
-          </div>
-          <div class="about-links">
-            <button class="about-link-btn" id="linkSite" title="Website">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
-            </button>
-            <button class="about-link-btn" id="linkGithub" title="GitHub">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.477 2 2 6.477 2 12c0 4.418 2.865 8.166 6.839 9.489.5.092.682-.217.682-.482 0-.237-.009-.868-.013-1.703-2.782.604-3.369-1.34-3.369-1.34-.454-1.156-1.11-1.463-1.11-1.463-.908-.62.069-.608.069-.608 1.003.07 1.531 1.03 1.531 1.03.892 1.529 2.341 1.087 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.11-4.555-4.943 0-1.091.39-1.984 1.029-2.683-.103-.253-.446-1.27.098-2.647 0 0 .84-.269 2.75 1.025A9.578 9.578 0 0 1 12 6.836a9.59 9.59 0 0 1 2.504.337c1.909-1.294 2.747-1.025 2.747-1.025.546 1.377.203 2.394.1 2.647.64.699 1.028 1.592 1.028 2.683 0 3.842-2.339 4.687-4.566 4.935.359.309.678.919.678 1.852 0 1.336-.012 2.415-.012 2.741 0 .267.18.578.688.48C19.138 20.163 22 16.418 22 12c0-5.523-4.477-10-10-10z"/></svg>
-            </button>
-            <button class="about-link-btn" id="linkTelegram" title="Telegram">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8-1.7 8.02c-.12.57-.46.71-.93.44l-2.58-1.9-1.24 1.19c-.14.14-.25.25-.51.25l.18-2.6 4.72-4.26c.2-.18-.05-.28-.32-.1L8.34 14.9l-2.54-.8c-.55-.17-.56-.55.12-.82l9.91-3.82c.46-.17.86.11.71.82z"/></svg>
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <div class="drop-overlay" id="dropOverlay">
-    <div class="drop-modal">
-      <div class="drop-title">Select format</div>
-      <div class="drop-formats" id="dropFormats"></div>
-      <button class="drop-cancel" id="dropCancel">Cancel</button>
-    </div>
-  </div>
-
-  <script src="renderer.js"></script>
-</body>
-</html>
+<body>
+<header class="titlebar"><div class="brand" aria-label="MSQ Converter"><img data-app-icon alt=""><span class="brand-wordmark">MSQ</span><span class="brand-product">Converter</span><small id="appVersion"></small></div><div class="window-controls"><button id="minBtn" aria-label="Minimize"><span data-icon="minimize"></span></button><button id="maxBtn" aria-label="Maximize"><span data-icon="maximize"></span></button><button id="closeBtn" aria-label="Close"><span data-icon="close"></span></button></div></header>
+<nav class="workspace-nav" aria-label="Workspace"><div class="tabs" role="tablist"><button id="queueBtn" class="tab active" role="tab" aria-selected="true" aria-controls="queuePanel"><span data-icon="queue"></span><span data-t="queue"></span><span id="queueCount" class="tab-count">0</span></button><button id="historyBtn" class="tab" role="tab" aria-selected="false" aria-controls="historyPanel"><span data-icon="history"></span><span data-t="history"></span><span id="historyCount" class="tab-count">0</span></button></div><button id="settingsBtn" class="quiet" data-tip="settingsShortcut"><span data-icon="settings"></span><span data-t="settings"></span></button></nav>
+<main id="queuePanel" role="tabpanel">
+<div class="toolbar"><button id="addBtn" data-tip="addShortcut"><span data-icon="add"></span><span data-t="add"></span></button><button id="folderBtn" data-tip="folderShortcut"><span data-icon="folder"></span><span data-t="addFolder"></span></button><span class="toolbar-divider"></span><button id="retryAllBtn" class="quiet" disabled data-tip="retryFailed"><span data-icon="retry"></span><span data-t="retryFailed"></span></button><button id="clearBtn" class="quiet" disabled data-tip="clear"><span data-icon="trash"></span><span data-t="clear"></span></button><span class="toolbar-spacer"></span><button id="cancelAllBtn" class="quiet" disabled data-tip="cancelAll"><span data-icon="stop"></span><span data-t="cancelAll"></span></button></div>
+<div class="batchbar"><label for="outputFormat" data-t="outputFormat"></label><select id="outputFormat" disabled aria-label="Output format"><option value="" data-t="byFile"></option></select><label for="operation" data-t="operation"></label><select id="operation" disabled><option value="convert" data-t="convertOnly"></option><option value="25">25%</option><option value="50">50%</option><option value="75">75%</option><option value="720p">720p</option><option value="1080p">1080p</option></select><span id="selectionInfo" class="batch-scope"></span><button id="startBtn" class="primary" disabled data-tip="startShortcut"><span data-icon="convert"></span><span data-t="start"></span><span id="startCount"></span></button></div>
+<section id="dropzone" class="queue-workspace" aria-label="Conversion queue">
+<div class="table-scroll" id="queueScroll"><table class="file-table"><colgroup><col class="col-check"><col class="col-name"><col class="col-target"><col class="col-size"><col class="col-state"><col class="col-progress"><col class="col-actions"></colgroup><thead><tr><th><input id="selectAll" type="checkbox" aria-label="Select all"></th><th data-t="file"></th><th><span class="direction">→</span> <span data-t="format"></span></th><th class="number" data-t="size"></th><th data-t="status"></th><th data-t="progress"></th><th></th></tr></thead><tbody id="fileList"></tbody></table></div>
+<div id="emptyState" class="empty-state"><span data-icon="files"></span><span data-t="empty"></span><button id="emptyAddBtn" class="text-button" data-t="add"></button><span class="shortcut">Ctrl+O</span></div>
+<div class="drop-indicator"><span data-icon="add"></span><span data-t="dropFiles"></span></div>
+</section>
+<section class="inspector" id="inspector" aria-live="polite"><div class="inspector-line"><span data-icon="file"></span><span id="inspectorPath" data-t="outputHint"></span><button id="detailBtn" class="text-button" hidden data-t="details"></button></div><pre id="errorDetails" hidden></pre></section>
+</main>
+<main id="historyPanel" role="tabpanel" hidden><div class="history-toolbar"><span data-t="historySession"></span><span class="toolbar-spacer"></span><button id="clearHistoryBtn" class="quiet" disabled><span data-icon="trash"></span><span data-t="clearHistory"></span></button></div><div class="table-scroll"><table class="history-table"><colgroup><col style="width:84px"><col><col style="width:96px"><col style="width:116px"><col style="width:76px"></colgroup><thead><tr><th data-t="time"></th><th data-t="file"></th><th data-t="format"></th><th data-t="status"></th><th class="number" data-t="duration"></th></tr></thead><tbody id="historyBody"></tbody></table><div id="historyEmpty" class="history-empty" data-t="noHistory"></div></div><div class="history-detail" id="historyDetail" data-t="historyHint"></div></main>
+<footer class="statusbar"><span id="statusLight" class="status-light"></span><span id="summary" aria-live="polite"></span><span id="currentFile" class="current-file"></span><span id="aggregateProgress" class="aggregate-progress" hidden><i></i></span><span id="elapsed" class="number"></span><span class="toolbar-spacer"></span><span class="status-local" data-t="local"></span><div class="service-links"><button id="siteBtn" data-tip="website" aria-label="Website"><span data-icon="globe"></span></button><button id="githubBtn" data-tip="github" aria-label="GitHub"><span data-icon="github"></span></button><button id="telegramBtn" data-tip="telegram" aria-label="Telegram"><span data-icon="telegram"></span></button></div></footer>
+<div class="overlay" id="settingsOverlay" role="dialog" aria-modal="true" aria-labelledby="settingsTitle"><div class="modal"><div class="modal-header"><h2 id="settingsTitle" data-t="settings"></h2><button data-close="settingsOverlay" class="icon-button" aria-label="Close"><span data-icon="close"></span></button></div><div class="settings-content">
+<h3 data-t="appearance"></h3><div class="setting-row"><label data-t="theme"></label><div class="segmented"><button data-theme-choice="light"><span data-icon="sun"></span><span data-t="light"></span></button><button data-theme-choice="dark"><span data-icon="moon"></span><span data-t="dark"></span></button></div></div><div class="setting-row"><label for="primaryPicker" data-t="primary"></label><div class="swatches"><button data-color="#8b5cf6" aria-label="Violet"></button><button data-color="#2563eb" aria-label="Blue"></button><button data-color="#0891b2" aria-label="Cyan"></button><button data-color="#059669" aria-label="Green"></button><button data-color="#e11d48" aria-label="Rose"></button><button data-color="#ea580c" aria-label="Orange"></button><input id="primaryPicker" type="color" value="#8b5cf6" aria-label="Custom primary color"></div></div><div class="setting-row"><label for="settingLang" data-t="language"></label><select id="settingLang"><option value="ru">Русский</option><option value="en">English</option></select></div>
+<h3 data-t="behavior"></h3><div class="setting-row"><div><label id="autoCloseLabel" data-t="autoClose"></label><small data-t="autoCloseHint"></small></div><button class="toggle" id="toggleAutoClose" role="switch" aria-labelledby="autoCloseLabel" aria-checked="false"></button></div><div class="setting-row"><div><label id="autoUpdateLabel" data-t="autoUpdate"></label><small data-t="autoUpdateHint"></small></div><button class="toggle" id="toggleAutoUpdate" role="switch" aria-labelledby="autoUpdateLabel" aria-checked="true"></button></div><div class="setting-row"><div><label id="integrationLabel" data-t="integration"></label><small data-t="integrationHint"></small></div><button class="toggle" id="toggleIntegration" role="switch" aria-labelledby="integrationLabel" aria-checked="false"></button></div>
+<div class="setting-row shortcut-setting"><div><label data-t="desktopShortcut"></label><small data-t="desktopShortcutHint"></small></div><button id="createShortcutBtn" data-t="createShortcut"></button></div>
+<div class="about"><img data-app-icon alt=""><div><strong><span class="brand-wordmark">MSQ</span> <span class="brand-product">Converter</span> <span id="aboutVersion"></span></strong><small>masiqqe · GNU GPL v3</small><small id="updateStatus"></small><div class="about-links"><button id="aboutSiteBtn" data-tip="website" aria-label="Website"><span data-icon="globe"></span><span data-t="website"></span></button><button id="aboutGithubBtn" data-tip="github" aria-label="GitHub"><span data-icon="github"></span><span>GitHub</span></button><button id="aboutTelegramBtn" data-tip="telegram" aria-label="Telegram"><span data-icon="telegram"></span><span>Telegram</span></button></div></div></div>
+</div><div class="modal-footer"><span data-t="savedAutomatically"></span><button data-close="settingsOverlay" data-t="close"></button></div></div></div>
+<div id="contextMenu" class="context-menu" role="menu" hidden></div><div id="scaleMenu" class="context-menu scale-menu" role="menu" aria-label="Scale" hidden></div><div id="tooltip" class="tooltip" role="tooltip" hidden></div><div id="toast" class="toast" role="status"><span data-icon="info"></span><span id="toastText"></span><button id="dismissToast" class="icon-button" aria-label="Dismiss"><span data-icon="close"></span></button></div>
+<script src="formats.js"></script><script src="i18n.js"></script><script src="icons.js"></script><script src="renderer.js"></script>
+</body></html>

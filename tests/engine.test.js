@@ -1,0 +1,6 @@
+const test=require('node:test'),assert=require('node:assert/strict'),{EventEmitter}=require('events')
+const {spawnReady}=require('../src/engine')
+function fake(failures){let calls=0;const invoke=()=>{const c=new EventEmitter();c.kill=()=>true;process.nextTick(()=>{if(calls++<failures)c.emit('error',Object.assign(new Error('locked'),{code:'EBUSY'}));else c.emit('spawn')});return c};return {invoke,count:()=>calls}}
+test('transient Windows EBUSY is retried and produces a started process',async()=>{const f=fake(2);const process=await spawnReady('ffmpeg',[],null,f.invoke);assert.ok(process);assert.equal(f.count(),3)})
+test('cancel during EBUSY retry exits without launching another process',async()=>{const f=fake(5),c=new AbortController();const promise=spawnReady('ffmpeg',[],c.signal,f.invoke);setTimeout(()=>c.abort(),20);await assert.rejects(promise,{name:'AbortError'});assert.equal(f.count(),1)})
+test('missing engine fails immediately rather than looping indefinitely',async()=>{let count=0;const fn=()=>{count++;const c=new EventEmitter();process.nextTick(()=>c.emit('error',Object.assign(new Error('missing'),{code:'ENOENT'})));return c};await assert.rejects(spawnReady('missing',[],null,fn),{code:'ENOENT'});assert.equal(count,1)})

@@ -1,11 +1,14 @@
 {
   "name": "msq-converter",
-  "version": "2.0.1",
-  "description": "MSQ Converter — fast and free file converter for Windows",
+  "version": "3.0.0",
+  "description": "MSQ Converter — portable file converter for Windows",
   "main": "src/main.js",
   "scripts": {
     "start": "electron .",
-    "build": "electron-builder"
+    "test": "node --test tests/*.test.js",
+    "build": "node scripts/build-portable.js",
+    "build:win": "node scripts/build-portable.js",
+    "verify:bundle": "node scripts/verify-bundle.js"
   },
   "keywords": [],
   "author": "masiqqe",
@@ -16,38 +19,98 @@
     "productName": "MSQ Converter",
     "copyright": "Copyright © 2026 masiqqe",
     "win": {
-      "target": "msi",
+      "target": [
+        {
+          "target": "portable",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
       "icon": "src/assets/icon.ico"
-    },
-    "msi": {
-      "oneClick": false,
-      "perMachine": false,
-      "createDesktopShortcut": true,
-      "createStartMenuShortcut": true
     },
     "files": [
       "src/**/*",
-      "package.json"
-    ],
-    "extraResources": [
-      {
-        "from": "src/assets",
-        "to": "assets"
-      }
+      "package.json",
+      "LICENSE*",
+      "!node_modules/@ffmpeg-installer/{linux*,darwin*}/**/*",
+      "!node_modules/@img/*linux*/**/*",
+      "!node_modules/@img/sharp-wasm32/**/*",
+      "!node_modules/@napi-rs/*linux*/**/*",
+      "!node_modules/@ffmpeg-installer/**/*",
+      "!node_modules/pdf-lib/{dist,es}/**/*",
+      "!node_modules/pdfjs-dist/{build,web,legacy/web,types}/**/*",
+      "!node_modules/**/*.map",
+      "!src/assets/*-master.png"
     ],
     "directories": {
       "output": "dist"
-    }
+    },
+    "artifactName": "MSQ-Converter-${version}-portable-${arch}.${ext}",
+    "asarUnpack": [
+      "src/conversion-worker.js",
+      "src/converter.js",
+      "src/engine.js",
+      "src/formats.js",
+      "node_modules/**/*",
+      "src/executable.js"
+    ],
+    "portable": {
+      "requestExecutionLevel": "user",
+      "useZip": false
+    },
+    "npmRebuild": false,
+    "compression": "normal",
+    "extraResources": [
+      {
+        "from": "node_modules/@ffmpeg-installer/win32-x64/ffmpeg.exe",
+        "to": "ffmpeg/ffmpeg.exe"
+      },
+      {
+        "from": "src/assets/icon.ico",
+        "to": "app-icon.ico"
+      },
+      {
+        "from": "src/assets/icon-light.png",
+        "to": "icons/icon-light.png"
+      },
+      {
+        "from": "src/assets/icon-light.ico",
+        "to": "icons/icon-light.ico"
+      },
+      {
+        "from": "src/assets/icon-dark.png",
+        "to": "icons/icon-dark.png"
+      },
+      {
+        "from": "src/assets/icon-dark.ico",
+        "to": "icons/icon-dark.ico"
+      }
+    ],
+    "electronLanguages": [
+      "en-US",
+      "ru"
+    ],
+    "afterPack": "scripts/pack-integrity.js"
   },
   "devDependencies": {
-    "electron": "^36.3.1",
-    "electron-builder": "^26.0.12",
-    "png-to-ico": "^3.0.1"
+    "electron": "36.3.1",
+    "electron-builder": "26.0.12",
+    "resedit": "3.1.0"
   },
   "dependencies": {
-    "@ffmpeg-installer/ffmpeg": "^1.1.0",
-    "ffmpeg-static": "^5.3.0",
-    "fluent-ffmpeg": "^2.1.3",
-    "sharp": "^0.35.1"
+    "@ffmpeg-installer/ffmpeg": "1.1.0",
+    "@napi-rs/canvas": "0.1.80",
+    "pdf-lib": "1.17.1",
+    "pdfjs-dist": "5.4.149",
+    "sharp": "0.35.1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/masiqqe/MSQ-Converter.git"
+  },
+  "homepage": "https://github.com/masiqqe/MSQ-Converter",
+  "bugs": {
+    "url": "https://github.com/masiqqe/MSQ-Converter/issues"
   }
 }

@@ -1,44 +1,4 @@
-const i18n = {
-  en: {
-    emptyState: 'Drag files here or open via context menu',
-    logs: 'Logs',
-    converting: 'Converting...',
-    done: 'Done',
-    error: 'Error',
-    cancelled: 'Cancelled',
-    processing: 'Processing...',
-    convertedFrom: 'Converted from',
-    from: 'From',
-    settingsTitle: 'Settings',
-    tabSettings: 'Settings',
-    tabAbout: 'About',
-    autoClose: 'Auto-close after all conversions done',
-    autoUpdate: 'Check for updates on startup',
-    language: 'Language',
-    license: 'This program is free software. You may redistribute it and/or modify it under the terms of the GNU General Public License.',
-    selectFormat: 'Select format',
-    cancel: 'Cancel',
-  },
-  ru: {
-    emptyState: 'Перетащите файлы сюда или запустите через контекстное меню',
-    logs: 'Логи',
-    converting: 'Конвертация...',
-    done: 'Готово',
-    error: 'Ошибка',
-    cancelled: 'Отменено',
-    processing: 'Обработка...',
-    convertedFrom: 'Конвертировано из',
-    from: 'Из',
-    settingsTitle: 'Настройки',
-    tabSettings: 'Настройки',
-    tabAbout: 'О программе',
-    autoClose: 'Автозакрытие после завершения конвертаций',
-    autoUpdate: 'Проверять обновления при запуске',
-    language: 'Язык',
-    license: 'Эта программа является свободным программным обеспечением. Вы можете распространять её и/или модифицировать в соответствии с условиями GNU General Public License.',
-    selectFormat: 'Выберите формат',
-    cancel: 'Отмена',
-  }
+window.translations={
+ru:{queue:'Очередь',history:'История',settings:'Настройки',settingsShortcut:'Настройки · Ctrl+,',add:'Добавить файлы',addShortcut:'Добавить файлы · Ctrl+O',addFolder:'Добавить папку',folderShortcut:'Добавить папку · Ctrl+Shift+O',retryFailed:'Повтор ошибок',clear:'Очистить завершённые',cancelAll:'Отменить всё',outputFormat:'Результат',byFile:'По файлам',operation:'Обработка',convertOnly:'Без изменений',start:'Конвертировать',startShortcut:'Конвертировать выбранные · Ctrl+Enter',file:'Файл',format:'Формат',size:'Размер',status:'Статус',progress:'Прогресс',empty:'Файлов в очереди нет.',dropFiles:'Добавить файлы в очередь',outputHint:'Результаты сохраняются рядом с исходниками.',details:'Подробности',historySession:'Операции текущего сеанса',clearHistory:'Очистить историю',time:'Время',duration:'Длительность',noHistory:'Операций пока нет.',historyHint:'Выберите операцию, чтобы увидеть результат или причину ошибки.',local:'Локальная обработка',appearance:'Внешний вид',theme:'Тема',light:'Светлая',dark:'Тёмная',primary:'Акцентный цвет',language:'Язык',behavior:'Поведение',autoClose:'Закрывать после завершения',autoCloseHint:'Через 5 секунд, если все задачи успешны.',autoUpdate:'Проверять обновления',autoUpdateHint:'Новая версия скачивается вручную.',integration:'Меню Проводника',integrationHint:'Windows 11: «Показать дополнительные параметры».',desktopShortcut:'Тематический ярлык',desktopShortcutHint:'Иконка на рабочем столе следует теме приложения.',createShortcut:'Создать',updateShortcut:'Обновить',shortcutCreated:'Ярлык создан на рабочем столе',shortcutError:'Не удалось создать ярлык',savedAutomatically:'Настройки сохраняются автоматически',close:'Закрыть',website:'Сайт',github:'GitHub',telegram:'Telegram',ready:'Ожидает запуска',queued:'В очереди',active:'Конвертация',done:'Готово',error:'Ошибка',cancelled:'Отменено',cancelling:'Отмена…',cancel:'Отменить',retry:'Повторить',remove:'Убрать из очереди',openSource:'Открыть исходник',showSource:'Исходник в Проводнике',openResult:'Открыть результат',showResult:'Результат в Проводнике',startOne:'Конвертировать',open:'Показать результат',allReady:'Все ожидающие',selected:'Выбрано',files:'файлов',finished:'готово',errors:'ошибок',working:'в работе',idle:'Нет активных задач',importing:'Чтение файлов…',added:'Добавлено',skipped:'Пропущено',unsupported:'Неподдерживаемые файлы',noFiles:'Нет доступных файлов.',scaleMenu:'Scale',scaleOriginal:'100% · исходный размер',scaleHint:'Процент ширины и высоты, не размера файла',scale:'Масштаб',low:'низкое',extract:'аудио',closeSoon:'Все задачи готовы. Окно закроется через 5 секунд.',update:'Доступна новая версия',integrationError:'Ошибка меню Проводника',portableHint:'Меню Проводника обновлено.',changed:'Настройки сохранены',seconds:'с',pdfHint:'PDF: первая страница; GIF → изображение: первый кадр.',copied:'Скопировано',copyError:'Скопировать ошибку',folderLimited:'Импорт ограничен 10 000 файлами',readErrors:'Не удалось прочитать',menu:'Действия с файлом',resultSize:'Результат',started:'Запущено',nothingSelected:'Нет ожидающих файлов'},
+en:{queue:'Queue',history:'History',settings:'Settings',settingsShortcut:'Settings · Ctrl+,',add:'Add files',addShortcut:'Add files · Ctrl+O',addFolder:'Add folder',folderShortcut:'Add folder · Ctrl+Shift+O',retryFailed:'Retry failed',clear:'Clear finished',cancelAll:'Cancel all',outputFormat:'Output',byFile:'Per file',operation:'Processing',convertOnly:'Original size',start:'Convert',startShortcut:'Convert selected · Ctrl+Enter',file:'File',format:'Format',size:'Size',status:'Status',progress:'Progress',empty:'No files in the queue.',dropFiles:'Add files to the queue',outputHint:'Results are saved next to their sources.',details:'Details',historySession:'Operations in this session',clearHistory:'Clear history',time:'Time',duration:'Duration',noHistory:'No operations yet.',historyHint:'Select an operation to see its result or error.',local:'Local processing',appearance:'Appearance',theme:'Theme',light:'Light',dark:'Dark',primary:'Accent color',language:'Language',behavior:'Behavior',autoClose:'Close after completion',autoCloseHint:'After 5 seconds, only if every job succeeds.',autoUpdate:'Check for updates',autoUpdateHint:'Download new versions manually.',integration:'Explorer context menu',integrationHint:'Windows 11: “Show more options”.',desktopShortcut:'Themed shortcut',desktopShortcutHint:'The desktop icon follows the application theme.',createShortcut:'Create',updateShortcut:'Update',shortcutCreated:'Desktop shortcut created',shortcutError:'Could not create shortcut',savedAutomatically:'Settings save automatically',close:'Close',website:'Website',github:'GitHub',telegram:'Telegram',ready:'Ready',queued:'Queued',active:'Converting',done:'Done',error:'Error',cancelled:'Cancelled',cancelling:'Cancelling…',cancel:'Cancel',retry:'Retry',remove:'Remove from queue',openSource:'Open source',showSource:'Reveal source',openResult:'Open result',showResult:'Reveal result',startOne:'Convert',open:'Reveal result',allReady:'All ready files',selected:'Selected',files:'files',finished:'done',errors:'errors',working:'active',idle:'No active jobs',importing:'Reading files…',added:'Added',skipped:'Skipped',unsupported:'Unsupported files',noFiles:'No accessible files.',scaleMenu:'Scale',scaleOriginal:'100% · original size',scaleHint:'Percentage of width and height, not file size',scale:'Scale',low:'low',extract:'audio',closeSoon:'All jobs completed. Closing in 5 seconds.',update:'New version available',integrationError:'Explorer menu error',portableHint:'Explorer menu updated.',changed:'Settings saved',seconds:'s',pdfHint:'PDF: first page; GIF → image: first frame.',copied:'Copied',copyError:'Copy error',folderLimited:'Import limited to 10,000 files',readErrors:'Could not read',menu:'File actions',resultSize:'Result',started:'Started',nothingSelected:'No ready files'}
 }
-
-module.exports = i18n

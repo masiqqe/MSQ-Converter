@@ -2,6 +2,10 @@ node_modules/
 dist/
 .env
 *.log
-installer.iss
-package-lock.json
-package.json
+validation/
+coverage/
+*.exe
+*.zip
+.DS_Store
+Thumbs.db
+*.cmd
